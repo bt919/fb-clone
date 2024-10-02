@@ -1,0 +1,19 @@
+# Ignore artifacts:
+build
+coverage
+node_modules
+ios
+android
+.vscode
+.idea
+.DS_Store
+package.json
+*.jpg
+*.ico
+*.svg
+*.mp3
+*.png
+*.snap
+dist
+public
+CHANGELOG.md

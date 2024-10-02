@@ -1,0 +1,37 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "rm -rf ./dist && tsc --project tsconfig.build.json",
+    "start": "tsx watch src/index.ts | pino-pretty",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "dependencies": {
+    "fastify": "^5.0.0",
+    "pino": "^9.4.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "@eslint/js": "^9.11.1",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^22.7.4",
+    "eslint": "^9.11.1",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.10.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "pino-pretty": "^11.2.2",
+    "prettier": "3.3.3",
+    "resolve-tspaths": "^0.8.22",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.8.0"
+  }
+}
