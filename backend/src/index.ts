@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import server from "./server/server";
 
 const fastify = Fastify({
   logger: true,
@@ -15,3 +16,13 @@ fastify.listen({ port: 3000 }, function (err, address) {
   }
   fastify.log.info(`server is listening at address ${address}`);
 });
+
+async function init() {
+  const fastify = Fastify({
+    logger: true,
+  });
+
+  await server(fastify);
+}
+
+init();
