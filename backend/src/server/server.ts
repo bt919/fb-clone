@@ -8,5 +8,12 @@ export default async function createServer(fastify: FastifyInstance) {
 
   await fastify.register(cors, {});
 
+  fastify.addHook("onError", async (request, reply, error) => {
+    fastify.log.error(error);
+
+    const statusCode = error.statusCode || 500;
+    return reply.status(statusCode).send({ message: error.message });
+  });
+
   return fastify.withTypeProvider<TypeBoxTypeProvider>();
 }
