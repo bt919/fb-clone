@@ -1,24 +1,44 @@
-import Fastify, { FastifyRequest } from "fastify";
-import { Type } from "@sinclair/typebox";
-import prisma from "@/shared/db/connection";
-import { User, UserType } from "./auth.dto";
+import Fastify, { FastifyInstance } from "fastify";
+import {
+  User,
+  UserCredentials,
+  UserCredentialsType,
+  UserType,
+} from "./auth.dto";
+import { signUp, signIn } from "./auth.service";
+import { AuthRepository } from "./auth.repository";
 
-const fastify = Fastify();
+// fastify.post<{ Body: UserType }>("/sign-up", async function (request, reply) {
+//   const success = await signUp(request.body, new AuthRepository());
 
-fastify.post<{ Body: UserType; reply: UserType }>(
-  "/sign-up",
-  {
-    schema: {
-      body: User,
-      response: {
-        200: User,
-      },
+//   return reply.status(201);
+// });
+
+// fastify.post<{ Body: UserCredentialsType }>(
+//   "sign-in",
+//   async (request, reply) => {
+//     const token = await signIn(request.body, new AuthRepository());
+
+//     return reply.status(200).send({ token });
+//   },
+// );
+
+export default function (fastify: FastifyInstance, opts, done) {
+  fastify.post<{ Body: UserType }>("/sign-up", async function (request, reply) {
+    const success = await signUp(request.body, new AuthRepository());
+    console.log(success);
+
+    return reply.status(201).send({ message: "success" });
+  });
+
+  fastify.post<{ Body: UserCredentialsType }>(
+    "/sign-in",
+    async (request, reply) => {
+      const token = await signIn(request.body, new AuthRepository());
+
+      return reply.status(200).send({ token });
     },
-  },
-  async (request, reply) => {
-    const { email, password } = request.body;
-    reply.status(200).send({ email, password });
-  },
-);
+  );
 
-export default fastify;
+  done();
+}

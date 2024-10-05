@@ -1,5 +1,5 @@
-import { get } from "env-var";
+import env from "env-var";
 
 export const databaseConfig = {
-  connection: get("DATABASE_URL").required().asString(),
+  connection: env.get("DATABASE_URL").required().asString(),
 };
