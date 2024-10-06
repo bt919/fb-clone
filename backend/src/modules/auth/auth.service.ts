@@ -14,7 +14,7 @@ export async function signUp(
 ) {
   const userExists = await authRepository.get(payload.email);
   if (userExists) {
-    return new BadRequestException("Email in use");
+    throw new BadRequestException("Email in use");
   }
 
   console.log("a");
@@ -38,7 +38,7 @@ export async function signIn(
 ) {
   const userExists = await authRepository.get(payload.email);
   if (!userExists) {
-    return new UnauthorizedException("Email or password incorrect");
+    throw new UnauthorizedException("Email or password incorrect");
   }
 
   const isPasswordCorrect = await argon.verify(
@@ -47,12 +47,13 @@ export async function signIn(
   );
 
   if (!isPasswordCorrect) {
-    return new UnauthorizedException("Email or password incorrect");
+    throw new UnauthorizedException("Email or password incorrect");
   }
 
   const secret = new TextEncoder().encode(authConfig.secretKey);
   const token = await new jose.SignJWT({ email: userExists.email })
     .setExpirationTime(authConfig.jwtExpiresIn)
+    .setProtectedHeader({ alg: "HS256" })
     .sign(secret);
 
   return token;

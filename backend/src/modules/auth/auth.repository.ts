@@ -1,7 +1,5 @@
-import argon from "@node-rs/argon2";
 import db from "@/shared/db/connection";
 import short from "short-uuid";
-import { UserType } from "./auth.dto";
 
 type UserData = {
   email: string;
@@ -28,14 +26,14 @@ export class AuthRepository {
   }
 
   async get(email: string): Promise<UserData> {
-    const user: UserData = await db.$queryRaw`
-                        SELECT email, hashed_password AS hashedPassword, 
-                            first_name AS firstName, 
-                            last_name AS lastName, gender
+    const user: UserData[] = await db.$queryRaw`
+                        SELECT email, hashed_password AS "hashedPassword", 
+                            first_name AS "firstName", 
+                            last_name AS "lastName", gender
                         FROM users
-                        WHERE users.email = ${email}`[0];
+                        WHERE users.email = ${email}`;
 
-    return user;
+    return user[0];
   }
 }
 

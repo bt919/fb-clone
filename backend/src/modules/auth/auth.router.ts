@@ -1,4 +1,4 @@
-import Fastify, { FastifyInstance } from "fastify";
+import { FastifyInstance } from "fastify";
 import {
   User,
   UserCredentials,
@@ -7,21 +7,6 @@ import {
 } from "./auth.dto";
 import { signUp, signIn } from "./auth.service";
 import { AuthRepository } from "./auth.repository";
-
-// fastify.post<{ Body: UserType }>("/sign-up", async function (request, reply) {
-//   const success = await signUp(request.body, new AuthRepository());
-
-//   return reply.status(201);
-// });
-
-// fastify.post<{ Body: UserCredentialsType }>(
-//   "sign-in",
-//   async (request, reply) => {
-//     const token = await signIn(request.body, new AuthRepository());
-
-//     return reply.status(200).send({ token });
-//   },
-// );
 
 export default function (fastify: FastifyInstance, opts, done) {
   fastify.post<{ Body: UserType }>("/sign-up", async function (request, reply) {
