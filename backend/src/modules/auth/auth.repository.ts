@@ -25,9 +25,10 @@ export class AuthRepository {
     return newUser.email;
   }
 
-  async get(email: string): Promise<UserData> {
-    const user: UserData[] = await db.$queryRaw`
-                        SELECT email, hashed_password AS "hashedPassword", 
+  async get(email: string): Promise<UserData & { userId: string }> {
+    const user: Array<UserData & { userId: string }> = await db.$queryRaw`
+                        SELECT email, hashed_password AS "hashedPassword",
+                            public_id AS "userId", 
                             first_name AS "firstName", 
                             last_name AS "lastName", gender
                         FROM users

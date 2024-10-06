@@ -17,10 +17,8 @@ export async function signUp(
     throw new BadRequestException("Email in use");
   }
 
-  console.log("a");
   const hash = await argon.hash(payload.password);
 
-  console.log("hash ------- ", hash);
   const newUser = await authRepository.create({
     email: payload.email,
     hashedPassword: hash,
@@ -51,7 +49,7 @@ export async function signIn(
   }
 
   const secret = new TextEncoder().encode(authConfig.secretKey);
-  const token = await new jose.SignJWT({ email: userExists.email })
+  const token = await new jose.SignJWT({ userId: userExists.userId })
     .setExpirationTime(authConfig.jwtExpiresIn)
     .setProtectedHeader({ alg: "HS256" })
     .sign(secret);

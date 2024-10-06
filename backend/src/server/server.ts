@@ -26,6 +26,7 @@ export default async function createServer(fastify: FastifyInstance) {
 
   fastify.register((fastify: FastifyInstance, opts, done) => {
     fastify.addHook("preParsing", async (request) => {
+      request.email = "";
       await verifyJWT(request);
     });
     // all routes that need auth go in here
