@@ -54,5 +54,10 @@ export async function signIn(
     .setProtectedHeader({ alg: "HS256" })
     .sign(secret);
 
-  return token;
+  return {
+    token: token,
+    firstName: userExists.firstName,
+    lastName: userExists.lastName,
+    gender: userExists.gender,
+  };
 }

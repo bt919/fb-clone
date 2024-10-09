@@ -15,11 +15,10 @@ export default async function createServer(fastify: FastifyInstance) {
     methods: "*",
   });
 
-  fastify.addHook("onError", async (request, reply, error) => {
-    fastify.log.error(error);
+  fastify.setErrorHandler(async function (error, request, reply) {
+    this.log.error(error);
 
-    const statusCode = error.statusCode || 500;
-    return reply.status(statusCode).send({ message: error.message });
+    return reply.status(error.statusCode || 500).send();
   });
 
   await fastify.register(authRouter);
