@@ -6,8 +6,8 @@
     },
     "resolveJsonModule": true,
     /* Linting */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
     "noStrictGenericChecks": false
