@@ -52,7 +52,9 @@ export default function Footer() {
     <div className="text-xs opacity-60 flex flex-col items-center pt-4">
       <div className="flex gap-3 items-center">
         {languages.map((language) => (
-          <p className="hover:underline">{language}</p>
+          <p className="hover:underline hover:cursor-pointer" key={language}>
+            {language}
+          </p>
         ))}
         <button className="bg-gray-200 hover:bg-gray-300 border-gray-300 border-2 font-bold p-1 w-8">
           +
@@ -63,7 +65,9 @@ export default function Footer() {
 
       <div className="grid grid-rows-4 grid-flow-col gap-2 text-[10px]">
         {keywords.map((keyword) => (
-          <p className="hover:underline">{keyword}</p>
+          <p className="hover:underline hover:cursor-pointer" key={keyword}>
+            {keyword}
+          </p>
         ))}
       </div>
     </div>
