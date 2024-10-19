@@ -33,11 +33,11 @@ export default function SignIn() {
   const submitHandler = async (d: SchemaType) => {
     try {
       const res = await fetch(`${apiUrl}/sign-in`, {
-        body: JSON.stringify(d),
-        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        method: "POST",
+        body: JSON.stringify(d),
       });
 
       if (res.status === 401) {

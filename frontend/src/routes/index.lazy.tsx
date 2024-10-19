@@ -10,7 +10,7 @@ export const Route = createLazyFileRoute("/")({
 function Index() {
   return (
     <>
-      <div className="bg-slate-200 h-[675px] flex items-center justify-center gap-20 pb-48">
+      <div className="bg-slate-200 h-[705px] flex items-center justify-center gap-20 pb-48">
         <div className="w-[440px]">
           <h1 className="text-blue-600 text-6xl font-bold">facebook</h1>
           <p className="text-2xl mt-3">
