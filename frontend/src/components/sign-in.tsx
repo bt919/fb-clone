@@ -1,5 +1,6 @@
 import apiUrl from "@/src/lib/api-url";
 import clsx from "clsx";
+import { Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,7 +75,7 @@ export default function SignIn() {
           ></input>
           <p
             className={clsx(
-              "absolute right-[350px] top-2 w-[370px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center",
+              "absolute right-[350px] top-2 w-[370px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
               {
                 invisible: !errors.email,
               },
@@ -99,7 +100,7 @@ export default function SignIn() {
           <input
             {...register("password")}
             type="password"
-            placeholder="password"
+            placeholder="Password"
             className={clsx(
               "p-3 border-2 border-gray-200 appearance-none outline-none focus:border-blue-400 rounded-lg",
               { "border-red-400": errors.password },
@@ -107,7 +108,7 @@ export default function SignIn() {
           ></input>
           <p
             className={clsx(
-              "absolute right-[350px] top-[80px] w-[370px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center",
+              "absolute right-[350px] top-[80px] w-[370px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
               { invisible: !errors.password },
             )}
           >
@@ -135,7 +136,7 @@ export default function SignIn() {
           </button>
           <p
             className={clsx(
-              "absolute right-[350px] top-[140px] w-[370px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center",
+              "absolute right-[350px] top-[140px] w-[370px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
               {
                 invisible: !apiError.length,
               },
@@ -167,11 +168,13 @@ export default function SignIn() {
           </a>
         </div>
         <div className="bg-slate-300 h-[1px] w-full m-2"></div>
-        <div className="flex justify-center mt-2">
-          <button className="bg-green-500 hover:bg-green-600 p-3 rounded-lg text-white font-bold w-48">
-            Create new account
-          </button>
-        </div>
+        <Link to="/sign-up">
+          <div className="flex justify-center mt-2">
+            <button className="bg-green-500 hover:bg-green-600 p-3 rounded-lg text-white font-bold w-48">
+              Create new account
+            </button>
+          </div>
+        </Link>
       </div>
 
       <p className="text-sm mt-6">

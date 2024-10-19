@@ -1,8 +1,13 @@
-import "./App.css";
+import { createLazyFileRoute } from "@tanstack/react-router";
+
 import Footer from "@/src/components/footer";
 import SignIn from "@/src/components/sign-in";
 
-function App() {
+export const Route = createLazyFileRoute("/")({
+  component: Index,
+});
+
+function Index() {
   return (
     <>
       <div className="bg-slate-200 h-[675px] flex items-center justify-center gap-20 pb-48">
@@ -20,5 +25,3 @@ function App() {
     </>
   );
 }
-
-export default App;
