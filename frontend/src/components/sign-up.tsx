@@ -83,6 +83,7 @@ export default function SignUp() {
 
       if (res.status !== 201) {
         setApiError("Unexpected error. Please try again later.");
+        return;
       }
 
       const data = await res.json();
@@ -96,6 +97,7 @@ export default function SignUp() {
     <div>
       <form
         onSubmit={handleSubmit(submitHandler)}
+        onChange={() => setApiError("")}
         className="flex flex-col items-center text-sm w-[432px]"
       >
         <div className="flex gap-2 p-2 relative">
@@ -379,7 +381,7 @@ export default function SignUp() {
           </button>
           <p
             className={clsx(
-              "absolute right-[195px] top-[6px] w-[300px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
+              "absolute right-[195px] top-[6px] w-[330px] p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
               {
                 invisible: !apiError.length,
               },

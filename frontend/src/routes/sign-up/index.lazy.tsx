@@ -5,7 +5,7 @@ import SignUp from "@/src/components/sign-up";
 
 import Footer from "@/src/components/footer";
 
-export const Route = createLazyFileRoute("/sign-up")({
+export const Route = createLazyFileRoute("/sign-up/")({
   component: About,
 });
 
