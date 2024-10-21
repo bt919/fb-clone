@@ -6,13 +6,13 @@ import SignUp from "@/src/components/sign-up";
 import Footer from "@/src/components/footer";
 
 export const Route = createLazyFileRoute("/sign-up/")({
-  component: About,
+  component: SignUpPage,
 });
 
-function About() {
+function SignUpPage() {
   return (
     <>
-      <div className="bg-slate-200 h-[705px] flex flex-col items-center gap-4 pb-48 pt-">
+      <div className="bg-slate-200 h-[705px]  flex flex-col items-center gap-4 pb-48 pt-">
         <Link to="/">
           <h1 className="text-blue-600 hover:text-blue-500 text-6xl font-bold">
             facebook

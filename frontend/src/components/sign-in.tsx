@@ -2,7 +2,7 @@ import apiUrl from "@/src/lib/api-url";
 import clsx from "clsx";
 import { Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -21,7 +21,25 @@ const schema = z.object({
 type SchemaType = z.infer<typeof schema>;
 
 export default function SignIn() {
-  const [apiError, setApiError] = useState("");
+  const mutation = useMutation({
+    mutationFn: async (data: SchemaType) => {
+      const response = await fetch(`${apiUrl}/sign-in`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const message =
+          response.status === 401
+            ? "Email or password incorrect."
+            : "Unexpected error. Try again later.";
+        throw new Error(message);
+      }
+      return response.json();
+    },
+  });
   const {
     register,
     handleSubmit,
@@ -30,39 +48,12 @@ export default function SignIn() {
     resolver: zodResolver(schema),
   });
 
-  const submitHandler = async (d: SchemaType) => {
-    try {
-      const res = await fetch(`${apiUrl}/sign-in`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify(d),
-      });
-
-      if (res.status === 401) {
-        setApiError("Incorrect email or password.");
-        return;
-      }
-
-      if (res.status !== 200) {
-        setApiError("Unexpected error. Please try again later.");
-        return;
-      }
-
-      const data = await res.json();
-      console.log({ data });
-    } catch (err) {
-      setApiError("Something went wrong. Try again later.");
-    }
-  };
-
   return (
     <div className="flex flex-col items-center pt-20">
       <div className="bg-white border-2 border-gray-200 p-4 rounded-lg w-96 flex flex-col shadow-lg">
         <form
-          onSubmit={handleSubmit(submitHandler)}
-          onChange={() => setApiError("")}
+          onSubmit={handleSubmit((data) => mutation.mutate(data))}
+          onChange={() => mutation.reset()}
           className="flex flex-col gap-4 relative"
         >
           <input
@@ -75,7 +66,7 @@ export default function SignIn() {
           ></input>
           <p
             className={clsx(
-              "absolute right-[350px] top-2 w-[370px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
+              "absolute right-[350px] top-2 w-max p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
               {
                 invisible: !errors.email,
               },
@@ -108,7 +99,7 @@ export default function SignIn() {
           ></input>
           <p
             className={clsx(
-              "absolute right-[350px] top-[80px] w-[370px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
+              "absolute right-[350px] top-[80px] w-max p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
               { invisible: !errors.password },
             )}
           >
@@ -129,16 +120,22 @@ export default function SignIn() {
             {errors.password ? errors.password.message : ""}
           </p>
           <button
+            disabled={mutation.isPending}
             type="submit"
-            className="bg-blue-600 hover:bg-blue-500 text-gray-50 font-bold p-2 rounded-lg"
+            className={clsx(
+              "bg-blue-600 hover:bg-blue-500 text-gray-50 font-bold p-2 rounded-lg",
+              {
+                "animate-pulse": mutation.isPending,
+              },
+            )}
           >
             Log in
           </button>
           <p
             className={clsx(
-              "absolute right-[350px] top-[140px] w-[370px] bg-gray-100 p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
+              "absolute right-[350px] top-[140px] w-max p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
               {
-                invisible: !apiError.length,
+                invisible: !mutation.isError,
               },
             )}
           >
@@ -156,7 +153,7 @@ export default function SignIn() {
                 d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
               />
             </svg>
-            {apiError.length ? apiError : ""}
+            {mutation.isError ? mutation.error.message : ""}
           </p>
         </form>
         <div className="flex justify-center mb-3">

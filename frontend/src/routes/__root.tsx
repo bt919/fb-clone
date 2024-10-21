@@ -1,20 +1,18 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+
+const queryClient = new QueryClient();
 
 export const Route = createRootRoute({
   component: () => (
     <>
-      <div className="">
-        {/* <Link to="/" className="[&.active]:font-bold">
-          Home
-        </Link>{" "}
-        <Link to="/about" className="[&.active]:font-bold">
-          About
-        </Link> */}
-      </div>
-      <hr />
-      <Outlet />
-      <TanStackRouterDevtools />
+      <QueryClientProvider client={queryClient}>
+        <Outlet />
+        <ReactQueryDevtools />
+        <TanStackRouterDevtools />
+      </QueryClientProvider>
     </>
   ),
 });
