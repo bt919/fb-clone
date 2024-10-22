@@ -2,7 +2,7 @@ import apiUrl from "@/src/lib/api-url";
 import clsx from "clsx";
 import { Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -36,7 +36,27 @@ const schema = z.object({
 type SchemaType = z.infer<typeof schema>;
 
 export default function SignUp() {
-  const [apiError, setApiError] = useState("");
+  const mutation = useMutation({
+    mutationFn: async (data: SchemaType) => {
+      const response = await fetch(`${apiUrl}/sign-up`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const message =
+          response.status === 400
+            ? "An account with this email already exists."
+            : "Unexpected error. Please try again later.";
+        throw new Error(message);
+      }
+
+      return response.json();
+    },
+  });
   const {
     register,
     handleSubmit,
@@ -66,37 +86,10 @@ export default function SignUp() {
     currentYear - 1905 + 1,
   );
 
-  const submitHandler = async (d: SchemaType) => {
-    try {
-      const res = await fetch(`${apiUrl}/sign-up`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify(d),
-      });
-
-      if (res.status === 400) {
-        setApiError("An account with this email already exists.");
-        return;
-      }
-
-      if (res.status !== 201) {
-        setApiError("Unexpected error. Please try again later.");
-        return;
-      }
-
-      const data = await res.json();
-      console.log({ data });
-    } catch (err) {
-      setApiError("Something went wrong. Try again later.");
-    }
-  };
-
   return (
     <div>
       <form
-        onSubmit={handleSubmit(submitHandler)}
+        onSubmit={handleSubmit((data) => mutation.mutate(data))}
         onChange={() => setApiError("")}
         className="flex flex-col items-center text-sm w-[432px]"
       >
@@ -375,7 +368,12 @@ export default function SignUp() {
         <div className="flex justify-center mt-2 relative">
           <button
             type="submit"
-            className="bg-green-500 hover:bg-green-600 p-3 rounded-lg text-white font-bold w-48"
+            className={clsx(
+              "bg-green-500 hover:bg-green-600 p-3 rounded-lg text-white font-bold w-48",
+              {
+                "animate-pulse": mutation.isPending,
+              },
+            )}
           >
             Sign Up
           </button>
@@ -383,7 +381,7 @@ export default function SignUp() {
             className={clsx(
               "absolute right-[195px] top-[6px] w-[330px] p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
               {
-                invisible: !apiError.length,
+                invisible: !mutation.isError,
               },
             )}
           >
@@ -401,7 +399,7 @@ export default function SignUp() {
                 d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
               />
             </svg>
-            {apiError.length ? apiError : ""}
+            {mutation.isError ? mutation.error.message : ""}
           </p>
         </div>
 
