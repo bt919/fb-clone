@@ -1,6 +1,6 @@
 import apiUrl from "@/src/lib/api-url";
 import clsx from "clsx";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +36,7 @@ const schema = z.object({
 type SchemaType = z.infer<typeof schema>;
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const mutation = useMutation({
     mutationFn: async (data: SchemaType) => {
       const response = await fetch(`${apiUrl}/sign-up`, {
@@ -55,6 +56,12 @@ export default function SignUp() {
       }
 
       return response.json();
+    },
+    onSuccess: () => {
+      navigate({
+        to: "/",
+        state: { message: "Account created succesfully. Sign in!" },
+      });
     },
   });
   const {
