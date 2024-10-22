@@ -90,7 +90,7 @@ export default function SignUp() {
     <div>
       <form
         onSubmit={handleSubmit((data) => mutation.mutate(data))}
-        onChange={() => setApiError("")}
+        onChange={() => mutation.reset()}
         className="flex flex-col items-center text-sm w-[432px]"
       >
         <div className="flex gap-2 p-2 relative">
