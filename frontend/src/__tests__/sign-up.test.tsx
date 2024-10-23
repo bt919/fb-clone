@@ -160,9 +160,9 @@ describe("Sign up component", async () => {
     ).toBeDefined();
   });
 
-  it("shows error message when the server has an unxpected error", async () => {
+  it("shows error message when the server has an unexpected error", async () => {
     server.use(
-      http.post<{}, { email: string }, {}>("/sign-up", async ({ request }) => {
+      http.post("/sign-up", () => {
         return HttpResponse.json(null, {
           status: 500,
         });
