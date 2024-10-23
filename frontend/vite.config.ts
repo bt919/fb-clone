@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
@@ -10,5 +10,8 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./"),
     },
+  },
+  test: {
+    environment: "jsdom",
   },
 });
