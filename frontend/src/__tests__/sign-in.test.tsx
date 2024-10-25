@@ -2,7 +2,15 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeAll, describe, expect, it, afterEach, afterAll } from "vitest";
+import {
+  beforeAll,
+  describe,
+  expect,
+  it,
+  afterEach,
+  afterAll,
+  beforeEach,
+} from "vitest";
 import { RouterProvider } from "@tanstack/react-router";
 
 import SignIn from "@/src/components/sign-in";
@@ -23,14 +31,18 @@ beforeAll(() => {
   server.listen();
 
   userEvent.setup();
-
+});
+beforeEach(() => {
   const router: any = wrapper(<SignIn />);
   render(<RouterProvider router={router} />);
 });
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+  server.resetHandlers();
+
+  cleanup();
+});
 afterAll(() => {
   server.close();
-  cleanup();
 });
 
 describe("Sign in component", () => {

@@ -386,7 +386,7 @@ export default function SignUp() {
           </button>
           <p
             className={clsx(
-              "absolute right-[195px] top-[6px] w-[330px] p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
+              "absolute right-[195px] top-[6px] w-max p-1 rounded-md bg-red-200 text-red-800 opacity-90 flex gap-1 items-center select-none",
               {
                 invisible: !mutation.isError,
               },
