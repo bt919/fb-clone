@@ -6,6 +6,8 @@ import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
+import { useAuth } from "@/src/components/auth/auth-context";
+
 const schema = z.object({
   email: z
     .string()
@@ -21,6 +23,7 @@ const schema = z.object({
 type SchemaType = z.infer<typeof schema>;
 
 export default function SignIn() {
+  const { login } = useAuth();
   const mutation = useMutation({
     mutationFn: async (data: SchemaType) => {
       const response = await fetch(`${apiUrl}/sign-in`, {
@@ -38,6 +41,9 @@ export default function SignIn() {
         throw new Error(message);
       }
       return response.json();
+    },
+    onSuccess: (data) => {
+      login(data);
     },
   });
   const {

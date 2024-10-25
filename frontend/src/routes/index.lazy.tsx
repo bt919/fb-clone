@@ -1,9 +1,10 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { Bounce, ToastContainer, toast } from "react-toastify";
-import { useLocation } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { Navigate, useLocation } from "@tanstack/react-router";
+import { useEffect, useContext } from "react";
 import "react-toastify/ReactToastify.css";
 
+import { useAuth } from "@/src/components/auth/auth-context";
 import Footer from "@/src/components/footer";
 import SignIn from "@/src/components/sign-in";
 
@@ -13,6 +14,7 @@ export const Route = createLazyFileRoute("/")({
 
 function Index() {
   const location = useLocation();
+  const { authData } = useAuth();
 
   useEffect(() => {
     const msg = location.state.message;
@@ -31,6 +33,11 @@ function Index() {
       });
     }
   }, []);
+
+  if (authData) {
+    return <Navigate to="/home"></Navigate>;
+  }
+
   return (
     <>
       <div className="bg-slate-200 h-[705px] flex items-center justify-center gap-20 pb-48">

@@ -1,15 +1,20 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
+import { Link, Navigate } from "@tanstack/react-router";
 
-import SignUp from "@/src/components/sign-up";
-
+import { useAuth } from "@/src/components/auth/auth-context";
 import Footer from "@/src/components/footer";
+import SignUp from "@/src/components/sign-up";
 
 export const Route = createLazyFileRoute("/sign-up/")({
   component: SignUpPage,
 });
 
 function SignUpPage() {
+  const { authData } = useAuth();
+
+  if (authData) {
+    return <Navigate to="/home"></Navigate>;
+  }
   return (
     <>
       <div className="bg-slate-200 h-[705px]  flex flex-col items-center gap-4 pb-48 pt-">

@@ -6,6 +6,8 @@ import {
 } from "@tanstack/react-router";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
+import { AuthProvider } from "@/src/components/auth/auth-context";
+
 const rootRoute = createRootRoute();
 
 export const router = createRouter({
@@ -18,7 +20,9 @@ export const wrapper = (component: JSX.Element) => {
   const rootRoute = createRootRoute({
     component: () => (
       <QueryClientProvider client={queryClient}>
-        <Outlet />
+        <AuthProvider>
+          <Outlet />
+        </AuthProvider>
       </QueryClientProvider>
     ),
   });
@@ -27,7 +31,12 @@ export const wrapper = (component: JSX.Element) => {
     path: "/",
     component: () => component,
   });
-  const routeTree = rootRoute.addChildren([indexRoute]);
+  const homeRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/home",
+    component: () => <div>Welcome to home</div>,
+  });
+  const routeTree = rootRoute.addChildren([indexRoute, homeRoute]);
   const router = createRouter({ routeTree });
 
   return router;

@@ -34,6 +34,8 @@ beforeAll(() => {
 });
 beforeEach(() => {
   const router: any = wrapper(<SignIn />);
+  router.navigate({ to: "/" });
+
   render(<RouterProvider router={router} />);
 });
 afterEach(() => {
@@ -90,39 +92,16 @@ describe("Sign in component", () => {
 
     await userEvent.click(screen.getByText("Log in"));
 
-    expect(screen.queryByText("Email or password incorrect.")).toBeNull();
-    expect(screen.queryByText("Unexpected error. Try again later.")).toBeNull();
-    expect(
-      screen.queryByText("Invalid email (example: user@example.com)"),
-    ).toBeNull();
-    expect(
-      screen.queryByText("Must be between 8 and 64 characters"),
-    ).toBeNull();
+    expect(screen.queryByText("Welcome to home")).not.toBeNull();
   });
 
-  it("shows error message when you log in using wrong password", async () => {
+  it("handles 401 error properly (which happens for incorrect emails or passwords)", async () => {
     server.use(
-      http.post<{}, { email: string; password: string }, {}>(
-        "/sign-in",
-        async ({ request }) => {
-          const body = await request.json();
-          const email = "bob@test.com";
-          const password = "bobtest123";
-
-          if (email !== body.email || password !== body.password) {
-            return HttpResponse.json(null, {
-              status: 401,
-            });
-          }
-
-          return HttpResponse.json(
-            { message: "success" },
-            {
-              status: 200,
-            },
-          );
-        },
-      ),
+      http.post("/sign-in", async () => {
+        return HttpResponse.json(null, {
+          status: 401,
+        });
+      }),
     );
     const emailAddressInput: HTMLInputElement = screen.getByPlaceholderText(
       "Email address or phone number",
