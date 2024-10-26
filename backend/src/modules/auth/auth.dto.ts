@@ -10,7 +10,7 @@ export const User = Type.Object({
     Type.Literal("female"),
     Type.Literal("other"),
   ]),
-  birthday: Type.String({ format: "date" }),
+  birthday: Type.String(),
 });
 
 export const UserCredentials = Type.Object({
