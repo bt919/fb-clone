@@ -25,6 +25,7 @@ export async function signUp(
     firstName: payload.firstName,
     lastName: payload.lastName,
     gender: payload.gender as unknown as "male" | "female" | "other",
+    birthday: new Date(payload.birthday),
   });
 
   return true;

@@ -14,7 +14,6 @@ export default function (fastify: FastifyInstance, opts, done) {
     { schema: { body: User } },
     async function (request, reply) {
       const success = await signUp(request.body, new AuthRepository());
-      console.log(success);
 
       return reply.status(201).send({ message: "success" });
     },

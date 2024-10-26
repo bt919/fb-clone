@@ -7,6 +7,7 @@ type UserData = {
   firstName: string;
   lastName: string;
   gender: "male" | "female" | "other";
+  birthday: Date;
 };
 
 export class AuthRepository {
@@ -19,6 +20,7 @@ export class AuthRepository {
         first_name: data.firstName,
         last_name: data.lastName,
         gender: data.gender as unknown as "male" | "female" | "other",
+        birthday: data.birthday,
       },
     });
 

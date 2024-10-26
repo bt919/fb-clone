@@ -15,6 +15,7 @@ model users {
   first_name      String      @db.VarChar(50)
   last_name       String      @db.VarChar(50)
   gender          gender_type
+  birthday        DateTime    @db.Date
 }
 
 enum gender_type {

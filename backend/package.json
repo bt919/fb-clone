@@ -5,7 +5,7 @@
   "scripts": {
     "build": "rm -rf ./dist && tsc --project tsconfig.build.json",
     "start": "tsx watch src/index.ts | pino-pretty",
-    "test": "jest",
+    "test": "jest --coverage=false",
     "prepare": "husky"
   },
   "author": "",
