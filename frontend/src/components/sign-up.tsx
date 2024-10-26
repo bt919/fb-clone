@@ -22,6 +22,9 @@ const schema = z.object({
   gender: z.enum(["male", "female", "other"], {
     message: "This field is required",
   }),
+  birthDay: z.string(),
+  birthMonth: z.string(),
+  birthYear: z.string(),
   email: z
     .string()
     .trim()
@@ -39,12 +42,20 @@ export default function SignUp() {
   const navigate = useNavigate();
   const mutation = useMutation({
     mutationFn: async (data: SchemaType) => {
+      const formData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        gender: data.gender,
+        email: data.email,
+        password: data.password,
+        birthday: `${data.birthYear}-${data.birthMonth}-${data.birthDay}`,
+      };
       const response = await fetch(`${apiUrl}/sign-up`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -96,7 +107,10 @@ export default function SignUp() {
   return (
     <div>
       <form
-        onSubmit={handleSubmit((data) => mutation.mutate(data))}
+        onSubmit={handleSubmit((data) => {
+          // console.log(data);
+          mutation.mutate(data);
+        })}
         onChange={() => mutation.reset()}
         className="flex flex-col items-center text-sm w-[432px]"
       >
@@ -170,21 +184,34 @@ export default function SignUp() {
         <div className="w-full flex flex-col p-2">
           <p className="text-[12px] opacity-80">Date of birth</p>
           <div className="flex gap-2 justify-center w-full">
-            <select className="bg-white outline-gray-200 border-2 border-gray-200 rounded-md p-2 w-full">
+            <select
+              {...register("birthDay")}
+              className="bg-white outline-gray-200 border-2 border-gray-200 rounded-md p-2 w-full"
+            >
               {days.map((_, index) => (
                 <option value={index + 1} key={index + 1}>
                   {index + 1}
                 </option>
               ))}
             </select>
-            <select className="bg-white outline-gray-200 border-2 border-gray-200 rounded-md p-2 w-full">
-              {months.map((month) => (
-                <option value={month} key={month}>
-                  {month}
-                </option>
-              ))}
+            <select
+              {...register("birthMonth")}
+              className="bg-white outline-gray-200 border-2 border-gray-200 rounded-md p-2 w-full"
+            >
+              {months.map((month, index) => {
+                const zeroIndexedMonth =
+                  index < 9 ? `0${1 + index}` : index + 1;
+                return (
+                  <option value={zeroIndexedMonth} key={month}>
+                    {month}
+                  </option>
+                );
+              })}
             </select>
-            <select className="bg-white outline-gray-200 border-2 border-gray-200 rounded-md p-2 w-full">
+            <select
+              {...register("birthYear")}
+              className="bg-white outline-gray-200 border-2 border-gray-200 rounded-md p-2 w-full"
+            >
               {years.map((_, index) => (
                 <option value={currentYear - index} key={currentYear - index}>
                   {currentYear - index}
