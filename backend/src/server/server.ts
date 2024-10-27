@@ -6,6 +6,8 @@ import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import path from "node:path";
 import authRouter from "@/modules/auth/auth.router";
 import { verifyJWT } from "@/shared/jwt/verify-jwt";
+import db from "@/shared/db/connection";
+import { AuthRepository } from "@/modules/auth/auth.repository";
 
 export default async function createServer(fastify: FastifyInstance) {
   await fastify.register(helmet, {});
@@ -21,7 +23,13 @@ export default async function createServer(fastify: FastifyInstance) {
     return reply.status(error.statusCode || 500).send();
   });
 
-  await fastify.register(authRouter);
+  fastify.decorate("db", db);
+
+  await fastify.register((fastify: FastifyInstance, opts, done) => {
+    fastify.decorate("authRepository", new AuthRepository(fastify.db));
+    fastify.register(authRouter);
+    done();
+  });
 
   fastify.register((fastify: FastifyInstance, opts, done) => {
     fastify.addHook("preParsing", async (request) => {

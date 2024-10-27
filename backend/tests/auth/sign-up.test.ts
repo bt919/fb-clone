@@ -1,4 +1,5 @@
 import app from "../app";
+import db from "@/shared/db/connection";
 
 describe("Auth service", () => {
   describe("/sign-up", () => {

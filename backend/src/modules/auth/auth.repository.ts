@@ -1,4 +1,4 @@
-import db from "@/shared/db/connection";
+import { PrismaClient } from "@prisma/client";
 import short from "short-uuid";
 
 type UserData = {
@@ -11,8 +11,14 @@ type UserData = {
 };
 
 export class AuthRepository {
+  private db: PrismaClient;
+
+  constructor(db: PrismaClient) {
+    this.db = db;
+  }
+
   async create(data: UserData): Promise<string | null> {
-    const newUser = await db.users.create({
+    const newUser = await this.db.users.create({
       data: {
         public_id: short.generate(),
         email: data.email,
@@ -28,7 +34,7 @@ export class AuthRepository {
   }
 
   async get(email: string): Promise<UserData & { userId: string }> {
-    const user: Array<UserData & { userId: string }> = await db.$queryRaw`
+    const user: Array<UserData & { userId: string }> = await this.db.$queryRaw`
                         SELECT email, hashed_password AS "hashedPassword",
                             public_id AS "userId", 
                             first_name AS "firstName", 
