@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { getUser } from "@prisma/client/sql";
 import short from "short-uuid";
 
 type UserData = {
@@ -33,14 +34,8 @@ export class AuthRepository {
     return newUser.email;
   }
 
-  async get(email: string): Promise<UserData & { userId: string }> {
-    const user: Array<UserData & { userId: string }> = await this.db.$queryRaw`
-                        SELECT email, hashed_password AS "hashedPassword",
-                            public_id AS "userId", 
-                            first_name AS "firstName", 
-                            last_name AS "lastName", gender
-                        FROM users
-                        WHERE users.email = ${email}`;
+  async get(email: string) {
+    const user = await this.db.$queryRawTyped(getUser(email));
 
     return user[0];
   }

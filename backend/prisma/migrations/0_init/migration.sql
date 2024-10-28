@@ -10,6 +10,7 @@ CREATE TABLE "users" (
     "first_name" VARCHAR(50) NOT NULL,
     "last_name" VARCHAR(50) NOT NULL,
     "gender" "gender_type" NOT NULL,
+    "birthday" DATE NOT NULL,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );

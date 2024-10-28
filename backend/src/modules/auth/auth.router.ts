@@ -23,6 +23,7 @@ export default function (fastify: FastifyInstance, opts, done) {
     { schema: { body: UserCredentials } },
     async function (request, reply) {
       const userData = await signIn(request.body, this.authRepository);
+      console.log("userData --------------- ", userData);
 
       return reply.status(200).send({ message: "success", data: userData });
     },
