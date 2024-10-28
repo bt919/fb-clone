@@ -36,7 +36,7 @@ export class AuthRepository {
 
   async get(email: string) {
     const user = await this.db.$queryRawTyped(getUser(email));
-
+    console.log("USER ------------------- ", user);
     return user[0];
   }
 }

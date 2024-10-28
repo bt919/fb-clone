@@ -39,12 +39,12 @@ export async function signIn(
   if (!userExists) {
     throw new UnauthorizedException("Email or password incorrect");
   }
-
+  console.log("userExists ------------------------- ", userExists);
   const isPasswordCorrect = await argon.verify(
     userExists.hashedPassword,
     payload.password,
   );
-
+  console.log("isPasswordCorrect -------------- ", isPasswordCorrect);
   if (!isPasswordCorrect) {
     throw new UnauthorizedException("Email or password incorrect");
   }

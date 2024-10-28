@@ -6,21 +6,9 @@ import { FastifyInstance } from "fastify";
 import { gender_type } from "@prisma/client";
 
 beforeAll(async () => {
-  const user = {
-    public_id: "123",
-    email: "test123@test.com",
-    hashed_password: "bobtest123",
-    first_name: "bob",
-    last_name: "test",
-    gender: "male" as gender_type,
-    birthday: "1980-02-13" as unknown as Date,
-    id: 23,
-  };
-  prismaMock.users.create.mockResolvedValue(user);
-  prismaMock.$queryRaw.mockResolvedValue({});
   server.decorate("db", prismaMock);
   await server.register((fastify: FastifyInstance, opts, done) => {
-    fastify.decorate("authRepository", new AuthRepository(fastify.db));
+    fastify.decorate("authRepository", new AuthRepository(prismaMock));
     fastify.register(authRouter);
     done();
   });
@@ -34,18 +22,19 @@ afterAll(async () => {
 describe("Auth service", () => {
   describe("/sign-in", () => {
     it("returns status 200", async () => {
-      // const user = {
-      //   public_id: "123",
-      //   email: "test123@test.com",
-      //   hashed_password: "bobtest123",
-      //   first_name: "bob",
-      //   last_name: "test",
-      //   gender: "male" as gender_type,
-      //   birthday: "1980-02-13" as unknown as Date,
-      //   id: 23,
-      // };
-      // prismaMock.users.create.mockResolvedValue(user);
-      // prismaMock.$queryRaw.mockResolvedValue({});
+      const user = [
+        {
+          userId: "234234",
+          email: "test1234@test.com",
+          firstName: "bob",
+          lastName: "test",
+          hashedPassword:
+            "$argon2id$v=19$m=19456,t=2,p=1$h5eVygnjTNz1kGbg6XpIQg$4AFD5kzN06ct5gtzO3R/RlA1+cqx1prJvUGEg42SZ4A",
+          gender: "male",
+          birthday: "1980-01-23",
+        },
+      ];
+      prismaMock.$queryRawTyped.mockResolvedValue(user as any);
 
       const response = await server.inject({
         method: "POST",
@@ -63,18 +52,19 @@ describe("Auth service", () => {
     });
 
     it("returns user data alongside a jsonwebtoken", async () => {
-      // const user = {
-      //   public_id: "123",
-      //   email: "test123@test.com",
-      //   hashed_password: "bobtest123",
-      //   first_name: "bob",
-      //   last_name: "test",
-      //   gender: "male" as gender_type,
-      //   birthday: "1980-02-13" as unknown as Date,
-      //   id: 23,
-      // };
-      // prismaMock.users.create.mockResolvedValue(user);
-      // prismaMock.$queryRaw.mockResolvedValue({});
+      const user = [
+        {
+          userId: "234234",
+          email: "test1234@test.com",
+          firstName: "bob",
+          lastName: "test",
+          hashedPassword:
+            "$argon2id$v=19$m=19456,t=2,p=1$h5eVygnjTNz1kGbg6XpIQg$4AFD5kzN06ct5gtzO3R/RlA1+cqx1prJvUGEg42SZ4A",
+          gender: "male",
+          birthday: "1980-01-23",
+        },
+      ];
+      prismaMock.$queryRawTyped.mockResolvedValue(user as any);
 
       const response = await server.inject({
         method: "POST",
