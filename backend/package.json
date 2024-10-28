@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf ./dist && tsc --project tsconfig.build.json",
+    "build": "rm -rf ./dist && tsc --project tsconfig.build.json && resolve-tspaths -p tsconfig.build.json -s ./src -o ./dist",
     "start": "tsx watch src/index.ts | pino-pretty",
+    "start:prod": "node ./dist/index.js --env-file=.env",
     "test": "jest --coverage=false",
     "prepare": "husky"
   },
   "author": "",
   "license": "ISC",
   "description": "",
-  "type": "module",
   "lint-staged": {
     "*.ts": [
       "eslint --fix",
