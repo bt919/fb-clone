@@ -23,10 +23,10 @@ export default async function createServer(fastify: FastifyInstance) {
     return reply.status(error.statusCode || 500).send();
   });
 
-  fastify.decorate("db", db);
+  // fastify.decorate("db", db);
 
   await fastify.register((fastify: FastifyInstance, opts, done) => {
-    fastify.decorate("authRepository", new AuthRepository(fastify.db));
+    fastify.decorate("authRepository", new AuthRepository(db));
     fastify.register(authRouter);
     done();
   });

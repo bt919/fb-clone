@@ -11,6 +11,5 @@ jest.mock("@/shared/db/connection", () => ({
 beforeEach(() => {
   mockReset(prismaMock);
 });
-console.log("B -------------------------- B");
 
 export const prismaMock = db as unknown as DeepMockProxy<PrismaClient>;

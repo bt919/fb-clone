@@ -8,7 +8,7 @@ import { gender_type } from "@prisma/client";
 beforeAll(async () => {
   server.decorate("db", prismaMock);
   await server.register((fastify: FastifyInstance, opts, done) => {
-    fastify.decorate("authRepository", new AuthRepository(fastify.db));
+    fastify.decorate("authRepository", new AuthRepository(prismaMock));
     fastify.register(authRouter);
     done();
   });
@@ -21,28 +21,53 @@ afterAll(async () => {
 
 describe("Auth service", () => {
   describe("/sign-up", () => {
-    it("returns status 400", async () => {
-      const user = {
-        id: 123,
-        public_id: "234",
-        email: "bob@test.com",
-        hashed_password: "asdlfkj1234",
-        first_name: "bob",
-        last_name: "test",
-        gender: "male" as unknown as gender_type,
-        birthday: "1990-01-23" as unknown as Date,
+    it("allows you to sign up successfully", async () => {
+      prismaMock.$queryRawTyped.mockResolvedValue([]);
+      const createdUser = {
+        email: "test234@test.com",
       };
-      prismaMock.users.create.mockResolvedValue(user);
-      prismaMock.$queryRaw.mockResolvedValue([
-        {
-          email: "bob@test.com",
-          hashedPassword: "asdlfkjaldkfj",
-          userId: "1234",
-          firstName: "bob",
-          lastName: "test",
+      prismaMock.users.create.mockResolvedValue(createdUser as any);
+
+      const response = await server.inject({
+        method: "POST",
+        url: "/sign-up",
+        body: {
+          email: "test234@test.com",
+          password: "bobtest123",
+          firstName: "test",
+          lastName: "bob",
+          gender: "male",
+          birthday: "1980-03-24",
+        },
+      });
+
+      expect(response.statusCode).toBe(201);
+    });
+
+    it("disallows signup if a field is missing", async () => {
+      prismaMock.$queryRawTyped.mockResolvedValue([]);
+      const createdUser = {
+        email: "test234@test.com",
+      };
+      prismaMock.users.create.mockResolvedValue(createdUser as any);
+
+      const response = await server.inject({
+        method: "POST",
+        url: "/sign-up",
+        body: {
+          email: "test234@test.com",
+          password: "bobtest123",
+          firstName: "test",
+          lastName: "bob",
           gender: "male",
         },
-      ]);
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it("disallow signup if an account with that email already exists", async () => {
+      prismaMock.$queryRawTyped.mockResolvedValue([{}]);
 
       const response = await server.inject({
         method: "POST",
