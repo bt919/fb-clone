@@ -146,6 +146,28 @@ CREATE TABLE notifications (
     link TEXT NOT NULL -- user clicks on link to get to the post, comment, or user's profile page for birthday
 );
 
+-- the following function and trigger is for when a user accepts a friend request, 
+-- user a and user b gets added to friends_with twice (once as a,b and 
+-- once as b,a)
+CREATE OR REPLACE FUNCTION add_friends() RETURNS TRIGGER AS $$
+    BEGIN
+        -- when a friend_request gets accepted, we need to add the two friends, 
+        -- and then finally delete the row from friend_requests.
+        IF OLD.is_accepted IS FALSE AND NEW.is_accepted IS TRUE THEN
+            INSERT INTO friends_with SELECT NEW.sender_id, NEW.receiver_id;
+            INSERT INTO friends_with SELECT NEW.receiver_id, NEW.sender_id;
+            DELETE FROM friend_requests WHERE id = NEW.id;
+            RETURN NEW;
+        END IF;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_friends
+    AFTER UPDATE ON friend_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION add_friends();
+
+
 
 
 /* Considerations:
