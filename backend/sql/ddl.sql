@@ -1,4 +1,9 @@
 CREATE TYPE gender_type AS ENUM('male', 'female', 'other');
+CREATE TYPE visibility_type AS ENUM('public', 'friends', 'private');
+CREATE TYPE reaction_type AS ENUM('like', 'heart', 'care', 'haha', 'wow', 'sad', 'angry');
+CREATE TYPE notification AS ENUM('birthday', 'post_tag', 'comment_tag');
+
+CREATE EXTENSION pg_trgm; -- used for similarity searches (specifically on user's ful names)
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -65,8 +70,6 @@ CREATE TABLE block_list (
     PRIMARY KEY (blocker_id, blocked_id)
 );
 
-CREATE TYPE visibility_type AS ENUM('public', 'friends', 'private');
-
 CREATE TABLE posts (
     id SERIAL PRIMARY KEY,
     public_id TEXT NOT NULL UNIQUE, -- short uuid
@@ -75,8 +78,6 @@ CREATE TABLE posts (
     posted_at TIMESTAMP DEFAULT NOW(),
     visibility visibility_type DEFAULT 'public'
 );
-
-CREATE TYPE reaction_type AS ENUM('like', 'heart', 'care', 'haha', 'wow', 'sad', 'angry');
 
 CREATE TABLE reaction (
     post_id INT REFERENCES posts(id)ON DELETE CASCADE,
@@ -136,8 +137,6 @@ CREATE TABLE message_media (
     mime TEXT
 );
 
-CREATE TYPE notification AS ENUM('birthday', 'post_tag', 'comment_tag');
-
 CREATE TABLE notifications (
     id TEXT PRIMARY KEY, -- short uuid
     sender_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -145,6 +144,22 @@ CREATE TABLE notifications (
     notification_type notification NOT NULL,
     link TEXT NOT NULL -- user clicks on link to get to the post, comment, or user's profile page for birthday
 );
+
+
+-- the following function and trigger is for when a user is created, a biography 
+-- gets automatically created for them as well
+CREATE OR REPLACE FUNCTION add_biography() RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO biography (user_id) VALUES (NEW.id);
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_biography
+    AFTER INSERT ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION add_biography();
+
 
 -- the following function and trigger is for when a user accepts a friend request, 
 -- user a and user b gets added to friends_with twice (once as a,b and 
@@ -167,6 +182,9 @@ CREATE TRIGGER add_friends
     FOR EACH ROW
     EXECUTE FUNCTION add_friends();
 
+
+-- create a gist index to allow for fast searches on users full names
+CREATE INDEX trgm_idx ON users USING GIST ((first_name || ' ' || last_name) gist_trgm_ops);
 
 
 

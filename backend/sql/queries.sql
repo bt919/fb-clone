@@ -65,3 +65,32 @@ WHERE id = $1;
 UPDATE friend_requests
 SET is_accepted = TRUE
 WHERE id = $1;
+
+-- use search bar to look for users to add
+-- given some search query, return top 10 most similar searches
+-- note: the following query weighs a friend and non-friend equally
+SELECT first_name || ' ' || last_name AS full_name, 
+                word_similarity($1, first_name || ' ' || last_name) as sml
+FROM users
+WHERE (first_name || ' ' || last_name) % ($1)
+        AND public_id <> $2
+ORDER BY sml DESC, full_name;
+-- this version of the query weighs a friend higher than a non-friend.
+-- word_similarity outputs a score between 0 and 1, but we will add 1 to the score
+-- if the user is a friend. we will add 2 instead if the user is themself.
+SELECT u.public_id, (u.first_name || ' ' || u.last_name) AS full_name,
+        u.profile_image_key, fw.user_one_id::BOOLEAN AS is_friends,
+        CASE WHEN fw.user_one_id::boolean IS TRUE THEN word_similarity($2, u.first_name || ' ' || last_name) + 1
+             WHEN u.id <> $1 THEN word_similarity($2, u.first_name || ' ' || last_name)
+             ELSE word_similarity($2, u.first_name || ' ' || last_name) + 2
+        END AS sml
+FROM users u LEFT OUTER JOIN friends_with fw
+        ON u.id <> $1 AND u.id = fw.user_two_id
+WHERE (first_name || ' ' || last_name) % ($2)
+LIMIT $3
+OFFSET $4;
+
+-- get friend suggestions
+-- given a user's public id, send back the top 5 friend suggestions
+-- TBD (can maybe base it off of the user's friends whom they've chatted
+-- most with)
