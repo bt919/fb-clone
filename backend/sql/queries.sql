@@ -94,3 +94,82 @@ OFFSET $4;
 -- given a user's public id, send back the top 5 friend suggestions
 -- TBD (can maybe base it off of the user's friends whom they've chatted
 -- most with)
+
+
+
+--------------------------- posts --------------------------------------------------
+-- create a post
+-- without an image
+INSERT INTO posts (public_id, user_id, post_text) 
+        SELECT $1, id, $3
+        FROM users 
+        WHERE public_id = $2;
+-- with an image
+WITH u AS (
+        SELECT id
+        FROM users
+        WHERE public_id = $1
+), new_post AS (
+        INSERT INTO posts (public_id, user_id, post_text)
+                SELECT $2, id, $3 
+                FROM u
+                RETURNING id
+)
+INSERT INTO post_media (post_id, image_key, mime) 
+        SELECT id, $4, $5 FROM new_post;
+
+-- modify visibility of a post
+UPDATE posts 
+SET visibility = $1 
+WHERE user_id IN (SELECT id
+                FROM users
+                WHERE public_id = $2);
+
+-- leave a like or reaction on a post
+INSERT INTO reaction (post_id, user_id, reaction)
+                SELECT $1, id, $3
+                FROM users
+                WHERE public_id = $2;
+
+-- remove a like or reaction on a post
+DELETE FROM reaction
+WHERE post_id = $1 
+        AND user_id IN (SELECT id
+                        FROM users
+                        WHERE public_id = $2)
+
+-- leave a top-level comment
+INSERT INTO comments (public_id, post_id, user_id, comment_text)
+        SELECT $1, $2, id, $4
+        FROM users
+        WHERE public_id = $3;
+
+-- leave a comment under another comment (nesting is always only one level deep)
+INSERT INTO comments (public_id, parent_id, post_id, user_id, comment_text)
+        SELECT $1, $2, $3, id, $5
+        FROM users
+        WHERE public_id = $4;
+
+-- leave a like or reaction on a post
+INSERT INTO comment_reactions (comment_id, user_id, type)
+        SELECT $1, id, $3
+        FROM users
+        WHERE public_id = $2;
+
+-- remove a like or reaction on a post
+DELETE FROM reaction
+WHERE post_id = $1
+        AND user_id IN (SELECT id
+                        FROM users
+                        WHERE public_id = $2)
+
+
+--------------------------- notifications ------------------------------------------
+
+
+
+--------------------------- settings -----------------------------------------------
+
+
+
+--------------------------- chat ---------------------------------------------------

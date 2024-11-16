@@ -1,9 +1,9 @@
 CREATE TYPE gender_type AS ENUM('male', 'female', 'other');
 CREATE TYPE visibility_type AS ENUM('public', 'friends', 'private');
 CREATE TYPE reaction_type AS ENUM('like', 'heart', 'care', 'haha', 'wow', 'sad', 'angry');
-CREATE TYPE notification AS ENUM('birthday', 'post_tag', 'comment_tag');
+CREATE TYPE notification AS ENUM('birthday', 'post_tag', 'comment_tag', 'friend_request', 'fr_accepted');
 
-CREATE EXTENSION pg_trgm; -- used for similarity searches (specifically on user's ful names)
+CREATE EXTENSION pg_trgm; -- used for similarity searches (specifically on user's full names)
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -96,7 +96,7 @@ CREATE TABLE post_media (
 CREATE TABLE comments (
     id SERIAL PRIMARY KEY,
     public_id TEXT NOT NULL UNIQUE, -- short uuid
-    parent_id INT REFERENCES comments(id) ON DELETE SET NULL, -- null means top-level comment
+    parent_id INT REFERENCES comments(id) ON DELETE CASCADE, -- null means top-level comment
     post_id INT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFEReNCES users(id) ON DELETE CASCADE,
     comment_text TEXT NOT NULL,
@@ -138,11 +138,12 @@ CREATE TABLE message_media (
 );
 
 CREATE TABLE notifications (
-    id TEXT PRIMARY KEY, -- short uuid
+    id SERIAL PRIMARY KEY, -- short uuid
     sender_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     receiver_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     notification_type notification NOT NULL,
-    link TEXT NOT NULL -- user clicks on link to get to the post, comment, or user's profile page for birthday
+    link TEXT, -- for when theres a page/link associated with the notification (might be more appropriate for this to store some kind of id instead like post id or comment id)
+    is_seen BOOLEAN DEFAULT FALSE
 );
 
 
@@ -159,6 +160,21 @@ CREATE TRIGGER add_biography
     AFTER INSERT ON users
     FOR EACH ROW
     EXECUTE FUNCTION add_biography();
+
+-- the following function and trigger is for when a user sends a friend request,
+-- a notification is created for the user receiving the friend request.
+CREATE OR REPLACE FUNCTION add_fr_notification() RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO notifications (sender_id, receiver_id, notification_type)
+            VALUES (NEW.sender_id, NEW.receiver_id, 'friend_request');
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_fr_notification
+    AFTER INSERT ON friend_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION add_fr_notification();
 
 
 -- the following function and trigger is for when a user accepts a friend request, 
@@ -182,10 +198,28 @@ CREATE TRIGGER add_friends
     FOR EACH ROW
     EXECUTE FUNCTION add_friends();
 
+-- the following function and trigger is for when a user accepts a friend request,
+-- a notification is created for the user who sent the friend request.
+CREATE OR REPLACE FUNCTION add_fr_accepted_notification() RETURNS TRIGGER AS $$
+    BEGIN
+        IF OLD.is_accepted IS FALSE AND NEW.is_accepted IS TRUE THEN
+            INSERT INTO notifications (sender_id, receiver_id, notification_type)
+                VALUES (NEW.receiver_id, NEW.sender_id, 'fr_accepted');
+            RETURN NEW;
+        END IF;
+    END;
+$$ LANGUAGE plpgsql;
+-- below a_ is appended to the start to cause this trigger to fire before the
+-- add_friends trigger
+CREATE TRIGGER a_add_fr_accepted_notification
+    AFTER UPDATE ON friend_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION add_friends();
+
+
 
 -- create a gist index to allow for fast searches on users full names
 CREATE INDEX trgm_idx ON users USING GIST ((first_name || ' ' || last_name) gist_trgm_ops);
-
 
 
 /* Considerations:
@@ -205,4 +239,6 @@ e) Comments and Chat messages are not deleted when the user who wrote them delet
     their account, but those features can be implemented at the application level.
 
 f) What types of indexes should be considered to improve performance?
+
+g) How should letting users tag other users in posts/comments work? 
 */
