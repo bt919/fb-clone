@@ -79,6 +79,15 @@ CREATE TABLE posts (
     visibility visibility_type DEFAULT 'public'
 );
 
+CREATE TABLE post_tags (
+    id SERIAL PRIMARY KEY,
+    post_id INT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    author_id INT NOT NULL REFERENCES posts(user_id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    text_name TEXT NOT NULL, -- usually first_name or last_name or (first_name || last_name)
+    UNIQUE (post_id, user_id)
+);
+
 CREATE TABLE reaction (
     post_id INT REFERENCES posts(id)ON DELETE CASCADE,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -101,6 +110,14 @@ CREATE TABLE comments (
     user_id INT NOT NULL REFEReNCES users(id) ON DELETE CASCADE,
     comment_text TEXT NOT NULL,
     posted_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE comment_tags (
+    id SERIAL PRIMARY KEY,
+    comment_id INT NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
+    author_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    text_name TEXT NOT NULL -- usually first_name or last_name or (first_name || last_name)
 );
 
 CREATE TABLE comment_reactions (
@@ -217,6 +234,37 @@ CREATE TRIGGER a_add_fr_accepted_notification
     EXECUTE FUNCTION add_friends();
 
 
+-- the following function and trigger is for when a user gets tagged in a post, 
+-- a notification is created for them
+CREATE OR REPLACE FUNCTION add_post_tag_notifications() RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO notifications (sender_id, receiver_id, notification_type)
+            VALUES (NEW.author_id, NEW.user_id, 'post_tag');
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_post_tag_notifications
+    AFTER INSERT ON post_tags
+    FOR EACH ROW
+    EXECUTE FUNCTION add_post_tag_notifications();
+
+
+-- the following function and trigger is for when a user gets tagged in a comment,
+-- a notification is created for them
+CREATE OR REPLACE FUNCTION add_comment_tag_notifications() RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO notifications (sender_id, receiver_id, notification_type)
+            VALUES (NEW.author_id, NEW.user_id, 'comment_tag');
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_comment_tag_notifications
+    AFTER INSERT ON comment_tags
+    FOR EACH ROW
+    EXECUTE FUNCTION add_comment_tag_notifications();
+    
 
 -- create a gist index to allow for fast searches on users full names
 CREATE INDEX trgm_idx ON users USING GIST ((first_name || ' ' || last_name) gist_trgm_ops);
