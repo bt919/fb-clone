@@ -160,7 +160,8 @@ CREATE TABLE notifications (
     receiver_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     notification_type notification NOT NULL,
     link TEXT, -- for when theres a page/link associated with the notification (might be more appropriate for this to store some kind of id instead like post id or comment id)
-    is_seen BOOLEAN DEFAULT FALSE
+    is_seen BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
 

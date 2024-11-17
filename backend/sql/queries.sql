@@ -165,7 +165,20 @@ WHERE post_id = $1
 
 
 --------------------------- notifications ------------------------------------------
+-- return the latest notifications for a user
+SELECT *
+FROM notifications
+WHERE receiver_id IN (SELECT id
+                      FROM users
+                      WHERE public_id = $1)
+ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3;
 
+-- mark a notification as seen
+UPDATE notifications
+SET is_seen = TRUE
+WHERE id = $1;
 
 
 --------------------------- settings -----------------------------------------------
