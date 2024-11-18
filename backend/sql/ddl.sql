@@ -128,7 +128,6 @@ CREATE TABLE comment_reactions (
 
 CREATE TABLE chat ( -- chat only supports two users for now
     id SERIAL PRIMARY KEY,
-    public_id TEXT NOT NULL UNIQUE, -- short uuid
     user_one_id INT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     user_two_id INT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     theme TEXT,
@@ -177,6 +176,20 @@ CREATE TRIGGER add_biography
     AFTER INSERT ON users
     FOR EACH ROW
     EXECUTE FUNCTION add_biography();
+
+
+-- the following function and trigger is for when a user is created, a chat
+-- is created between the user and themself.
+CREATE OR REPLACE FUNCTION create_chat() RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO chat (user_one_id, user_two_id) VALUES (NEW.id, NEW.id);
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER create_chat
+    AFTER INSERT ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION create_chat();
 
 
 -- the following function and trigger is for when a user sends a friend request,
