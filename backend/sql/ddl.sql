@@ -183,6 +183,7 @@ CREATE TRIGGER add_biography
 CREATE OR REPLACE FUNCTION create_chat() RETURNS TRIGGER AS $$
     BEGIN
         INSERT INTO chat (user_one_id, user_two_id) VALUES (NEW.id, NEW.id);
+        RETURN NEW;
     END;
 $$ LANGUAGE plpgsql;
 
