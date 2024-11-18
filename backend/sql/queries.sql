@@ -30,12 +30,16 @@ WHERE user_id IN (SELECT id
                     WHERE public_id = $2);
 -- given a user's public id, and a school's name and level, first add the school,
 -- and then add that the user studied at that school
-INSERT INTO school VALUES ($1, $2, $3);
-INSERT INTO studied_at VALUES (SELECT id FROM users WHERE public_id = $1, $2);
+WITH student AS (
+        INSERT INTO school (name, level) VALUES ($1, $2) RETURNING id
+)
+INSERT INTO studied_at VALUES (SELECT id FROM users WHERE public_id = $3, id);
 -- given a user's public id, and a workplace's name, first add the workplace,
 -- and then add that the user worked at that workplace
-INSERT INTO workplace VALUES ($1, $2);
-INSERT INTO worked_at VALUES (SELECT id FROM users WHERE public_id = $1, $2);
+WITH employee AS (
+        INSERT INTO workplace (name) VALUES ($1) RETURNING id
+)
+INSERT INTO worked_at VALUES (SELECT id FROM users WHERE public_id = $2, id);
 
 -- cover photo
 -- given a user's public_id, and an image key, update their cover photo
@@ -50,7 +54,7 @@ WHERE user_id IN (SELECT id
 --------------------------- friends ------------------------------------------------
 -- send/receive friend requests
 INSERT INTO friend_requests (id, sender_id, receiver_id) 
-                VALUE ($1, SELECT id FROM users WHERE public_id = $2, 
+                VALUES ($1, SELECT id FROM users WHERE public_id = $2, 
                         SELECT id FROM users WHERE public_id = $3);
 
 -- view friend request
@@ -100,23 +104,23 @@ OFFSET $4;
 --------------------------- posts --------------------------------------------------
 -- create a post
 -- without an image
-INSERT INTO posts (public_id, user_id, post_text) 
-        SELECT $1, id, $3
+INSERT INTO posts (user_id, post_text) 
+        SELECT id, $2
         FROM users 
-        WHERE public_id = $2;
+        WHERE public_id = $1;
 -- with an image
 WITH u AS (
         SELECT id
         FROM users
         WHERE public_id = $1
 ), new_post AS (
-        INSERT INTO posts (public_id, user_id, post_text)
-                SELECT $2, id, $3 
+        INSERT INTO posts (user_id, post_text)
+                SELECT id, $2 
                 FROM u
                 RETURNING id
 )
 INSERT INTO post_media (post_id, image_key, mime) 
-        SELECT id, $4, $5 FROM new_post;
+        SELECT id, $3, $4 FROM new_post;
 
 -- modify visibility of a post
 UPDATE posts 
@@ -139,16 +143,16 @@ WHERE post_id = $1
                         WHERE public_id = $2)
 
 -- leave a top-level comment
-INSERT INTO comments (public_id, post_id, user_id, comment_text)
-        SELECT $1, $2, id, $4
+INSERT INTO comments (post_id, user_id, comment_text)
+        SELECT $1, id, $3
         FROM users
-        WHERE public_id = $3;
+        WHERE public_id = $2;
 
 -- leave a comment under another comment (nesting is always only one level deep)
-INSERT INTO comments (public_id, parent_id, post_id, user_id, comment_text)
-        SELECT $1, $2, $3, id, $5
+INSERT INTO comments (parent_id, post_id, user_id, comment_text)
+        SELECT $1, $2, id, $4
         FROM users
-        WHERE public_id = $4;
+        WHERE public_id = $5;
 
 -- leave a like or reaction on a post
 INSERT INTO comment_reactions (comment_id, user_id, type)
@@ -182,7 +186,12 @@ WHERE id = $1;
 
 
 --------------------------- settings -----------------------------------------------
+-- allow a user to block another user
+INSERT INTO block_list (blocker_id, blocked_id)
+SELECT $1, id FROM users WHERE public_id = $2;
 
-
+-- allow a user to unblock another user
+DELETE FROM block_list
+WHERE id = $1;
 
 --------------------------- chat ---------------------------------------------------

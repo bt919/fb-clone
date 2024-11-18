@@ -26,25 +26,25 @@ CREATE TABLE biography (
 );
 
 CREATE TABLE school (
-    id TEXT PRIMARY KEY, -- short uuid
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     level TEXT -- highschool, college, university, etc...
 );
 
 CREATE TABLE studied_at (
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    school_id TEXT REFERENCES school(id),
+    school_id INT REFERENCES school(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, school_id)
 );
 
 CREATE TABLE workplace (
-    id TEXT PRIMARY KEY, -- short uuid
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL
 );
 
 CREATE TABLE worked_at (
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    workplace_id TEXT REFERENCES workplace(id),
+    workplace_id INT REFERENCES workplace(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, workplace_id)
 );
 
@@ -54,8 +54,8 @@ CREATE TABLE friends_with ( -- when user a adds user b, insert a,b and b,a
     PRIMARY KEY (user_one_id, user_two_id)
 );
 
-CREATE TABLE friend_requests ( -- if rejected, delete entry from table
-    id TEXT PRIMARY KEY, -- short uuid
+CREATE TABLE friend_requests (
+    id SERIAL PRIMARY KEY,
     sender_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     receiver_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     is_accepted BOOLEAN DEFAULT FALSE,
@@ -65,15 +65,15 @@ CREATE TABLE friend_requests ( -- if rejected, delete entry from table
 );
 
 CREATE TABLE block_list (
+    id SERIAL PRIMARY KEY,
     blocker_id INT REFERENCES users(id) ON DELETE CASCADE,
     blocked_id INT REFERENCES users(id) ON DELETE CASCADE,
-    PRIMARY KEY (blocker_id, blocked_id)
+    UNIQUE (blocker_id, blocked_id)
 );
 
 CREATE TABLE posts (
     id SERIAL PRIMARY KEY,
-    public_id TEXT NOT NULL UNIQUE, -- short uuid
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    author_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     post_text TEXT, -- could be null (for ex when you post a video with no caption)
     posted_at TIMESTAMP DEFAULT NOW(),
     visibility visibility_type DEFAULT 'public'
@@ -82,10 +82,10 @@ CREATE TABLE posts (
 CREATE TABLE post_tags (
     id SERIAL PRIMARY KEY,
     post_id INT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    author_id INT NOT NULL REFERENCES posts(user_id) ON DELETE CASCADE,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    author_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    tagged_user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     text_name TEXT NOT NULL, -- usually first_name or last_name or (first_name || last_name)
-    UNIQUE (post_id, user_id)
+    UNIQUE (post_id, tagged_user_id)
 );
 
 CREATE TABLE reaction (
@@ -104,10 +104,9 @@ CREATE TABLE post_media (
 
 CREATE TABLE comments (
     id SERIAL PRIMARY KEY,
-    public_id TEXT NOT NULL UNIQUE, -- short uuid
     parent_id INT REFERENCES comments(id) ON DELETE CASCADE, -- null means top-level comment
     post_id INT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    user_id INT NOT NULL REFEReNCES users(id) ON DELETE CASCADE,
+    author_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     comment_text TEXT NOT NULL,
     posted_at TIMESTAMP DEFAULT NOW()
 );
@@ -116,7 +115,7 @@ CREATE TABLE comment_tags (
     id SERIAL PRIMARY KEY,
     comment_id INT NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
     author_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    tagged_user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     text_name TEXT NOT NULL -- usually first_name or last_name or (first_name || last_name)
 );
 
@@ -141,7 +140,7 @@ CREATE TABLE chat ( -- chat only supports two users for now
 
 CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+    sender_id INT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     chat_id INT NOT NULL REFERENCES chat(id) ON DELETE CASCADE,
     message_text TEXT, -- could be null (for example when you send a meme)
     posted_at TIMESTAMP DEFAULT NOW()
@@ -179,6 +178,7 @@ CREATE TRIGGER add_biography
     FOR EACH ROW
     EXECUTE FUNCTION add_biography();
 
+
 -- the following function and trigger is for when a user sends a friend request,
 -- a notification is created for the user receiving the friend request.
 CREATE OR REPLACE FUNCTION add_fr_notification() RETURNS TRIGGER AS $$
@@ -215,6 +215,7 @@ CREATE TRIGGER add_friends
     AFTER UPDATE ON friend_requests
     FOR EACH ROW
     EXECUTE FUNCTION add_friends();
+
 
 -- the following function and trigger is for when a user accepts a friend request,
 -- a notification is created for the user who sent the friend request.
