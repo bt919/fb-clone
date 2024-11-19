@@ -128,12 +128,13 @@ CREATE TABLE comment_reactions (
 
 CREATE TABLE chat ( -- chat only supports two users for now
     id SERIAL PRIMARY KEY,
-    user_one_id INT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
-    user_two_id INT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+    user_one_id INT REFERENCES users(id) ON DELETE SET NULL,
+    user_two_id INT REFERENCES users(id) ON DELETE SET NULL,
     theme TEXT,
     emoji TEXT,
     nickname_one TEXT,
     nickname_two TEXT,
+    message_last_sent TIMESTAMP DEFAULT NOW(),
     UNIQUE (user_one_id, user_two_id)
 );
 
@@ -191,6 +192,20 @@ CREATE TRIGGER create_chat
     AFTER INSERT ON users
     FOR EACH ROW
     EXECUTE FUNCTION create_chat();
+
+
+-- the following trigger is for whenever a messages is inserted for a 
+-- chat, the message_last_sent field on that chat should be updated
+CREATE OR REPLACE FUNCTION update_message_last_sent() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE chat SET message_last_sent = NEW.posted_at WHERE id = NEW.id;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_message_last_sent
+    AFTER INSERT ON messages
+    FOR EACH ROW
+    EXECUTE FUNCTION update_message_last_sent();
 
 
 -- the following function and trigger is for when a user sends a friend request,

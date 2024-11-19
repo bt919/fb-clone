@@ -194,4 +194,49 @@ SELECT $1, id FROM users WHERE public_id = $2;
 DELETE FROM block_list
 WHERE id = $1;
 
+-- allow a user to delete their account
+DELETE FROM users WHERE public_id = $1;
+
+
 --------------------------- chat ---------------------------------------------------
+-- create a chat between two users
+INSERT INTO chat (user_one_id, user_two_id)
+        SELECT uo.id, ut.id
+        FROM (SELECT id FROM users WHERE public_id = $1) AS uo
+        CROSS JOIN (SELECT id FROM users WHERE public_id = $2) AS ut;
+
+-- return metadata of recent chats for a user (WIP)
+WITH u AS (
+        SELECT id FROM users WHERE public_id = $1
+), recent_chats AS (
+        SELECT c.id AS chat_id, NOW() - c.message_last_sent AS last_spoken_to,
+                CASE WHEN user_one_id = u.id THEN user_two_id
+                        ELSE user_one_id
+                END AS friend_id
+        FROM chat c, u
+        WHERE c.user_one_id = u.id OR c.user_two_id = u.id
+        ORDER BY c.message_last_sent DESC
+)
+SELECT rc.chat_id, rc.last_spoken_to, u.public_id, u.profile_image_key
+FROM recent_chats rc, users u, messages m
+WHERE rc.friend_id = u.id AND rc.chat_id = m.chat_id
+ORDER BY m.posted_at DESC;
+
+-- send a message to a chat
+INSERT INTO messages (sender_id, chat_id, message_text)
+        SELECT id, $2, $3
+        FROM users
+        WHERE public_id = $1;
+
+-- send an image or gif to a chat
+WITH msg AS (
+        INSERT INTO messages (sender_id, chat_id)
+        SELECT id, $2
+        FROM users
+        WHERE public_id = $1
+        RETURNING id -- messages.id
+)
+INSERT INTO message_media (message_id, image_key)
+        SELECT id, $3 FROM msg;
+
+-- be able to search through a chat (TBD)
