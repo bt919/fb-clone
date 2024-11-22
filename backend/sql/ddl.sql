@@ -88,7 +88,7 @@ CREATE TABLE post_tags (
     UNIQUE (post_id, tagged_user_id)
 );
 
-CREATE TABLE reaction (
+CREATE TABLE reactions (
     post_id INT REFERENCES posts(id)ON DELETE CASCADE,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     reaction reaction_type NOT NULL,
@@ -122,7 +122,7 @@ CREATE TABLE comment_tags (
 CREATE TABLE comment_reactions (
     comment_id INT REFERENCES comments(id) ON DELETE CASCADE,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    type reaction_type NOT NULL,
+    reaction reaction_type NOT NULL,
     PRIMARY KEY (comment_id, user_id)
 );
 

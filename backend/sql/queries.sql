@@ -122,6 +122,14 @@ WITH u AS (
 INSERT INTO post_media (post_id, image_key, mime) 
         SELECT id, $3, $4 FROM new_post;
 
+-- retrieve only your posts by recency (for profile page)
+
+-- retrieve your posts as well as your friends' posts (for home page)
+
+
+-- 9gHdLdKjnTSoa81H3fMYic
+
+
 -- modify visibility of a post
 UPDATE posts 
 SET visibility = $1 
@@ -130,13 +138,13 @@ WHERE user_id IN (SELECT id
                 WHERE public_id = $2);
 
 -- leave a like or reaction on a post
-INSERT INTO reaction (post_id, user_id, reaction)
+INSERT INTO reactions (post_id, user_id, reaction)
                 SELECT $1, id, $3
                 FROM users
                 WHERE public_id = $2;
 
 -- remove a like or reaction on a post
-DELETE FROM reaction
+DELETE FROM reactions
 WHERE post_id = $1 
         AND user_id IN (SELECT id
                         FROM users
@@ -155,13 +163,13 @@ INSERT INTO comments (parent_id, post_id, user_id, comment_text)
         WHERE public_id = $5;
 
 -- leave a like or reaction on a post
-INSERT INTO comment_reactions (comment_id, user_id, type)
+INSERT INTO comment_reactions (comment_id, user_id, reaction)
         SELECT $1, id, $3
         FROM users
         WHERE public_id = $2;
 
--- remove a like or reaction on a post
-DELETE FROM reaction
+-- remove a like or reaction on a comment
+DELETE FROM comment_reactions
 WHERE post_id = $1
         AND user_id IN (SELECT id
                         FROM users

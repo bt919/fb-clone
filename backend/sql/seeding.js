@@ -40,9 +40,28 @@ const populateFriends = (numberOfCurrentUsers) => {
   }
 };
 
+const populatePosts = (numberOfCurrentUsers) => {
+  for (let i = 1; i <= numberOfCurrentUsers; i += 1) {
+    console.log(
+      `INSERT INTO posts (author_id, post_text) SELECT ${i}, 'This is a fake post used to populate the db.';`,
+    );
+    // add reactions to each post
+    for (let j = 1; j < 10; j += 1) {
+      console.log(`INSERT INTO reactions VALUES (${i}, ${j}, 'like');`);
+    }
+    // add comments to each post
+    for (let j = 1; j < 5; j += 1) {
+      console.log(
+        `INSERT INTO comments (post_id, author_id, comment_text) VALUES (${i}, ${j}, 'This is a fake comment used to populate the db.');`,
+      );
+    }
+  }
+};
+
 // run 'node seeding.js > populate.sql'
 // now you can run 'sudo -u username psql db_name -f populate.sql'
 // you need to supply your own username and db_name in the command above
 const numberOfUsers = 100;
 populateUsers(numberOfUsers);
 populateFriends(numberOfUsers);
+populatePosts(numberOfUsers);
