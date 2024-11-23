@@ -292,3 +292,13 @@ INSERT INTO message_media (message_id, image_key)
         SELECT id, $3 FROM msg;
 
 -- be able to search through a chat (TBD)
+
+-- retrieve how the number of unopened chats a user has
+SELECT COUNT(*) AS number_of_notifications -- might need to do COUNT(DISTINCT c.id) here
+FROM users u, chat c, messages m
+WHERE u.public_id = $1 
+        AND (u.id = c.user_one_id OR u.id = c.user_two_id)
+        AND c.user_one_id <> c.user_two_id
+        AND c.id = m.chat_id
+GROUP BY c.id, u.id, m.id
+HAVING m.is_seen IS FALSE;
