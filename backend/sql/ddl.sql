@@ -14,7 +14,8 @@ CREATE TABLE users (
     last_name VARCHAR(50) NOT NULL,
     gender gender_type NOT NULL,
     birthday DATE NOT NULL,
-    profile_image_key TEXT
+    profile_image_key TEXT,
+    is_online BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE biography (
@@ -145,6 +146,7 @@ CREATE TABLE messages (
     sender_id INT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     chat_id INT NOT NULL REFERENCES chat(id) ON DELETE CASCADE,
     message_text TEXT, -- could be null (for example when you send a meme)
+    is_seen BOOLEAN DEFAULT FALSE,
     posted_at TIMESTAMP DEFAULT NOW()
 );
 

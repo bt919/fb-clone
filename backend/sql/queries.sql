@@ -99,6 +99,19 @@ OFFSET $4;
 -- TBD (can maybe base it off of the user's friends whom they've chatted
 -- most with)
 
+-- retrieve friends by most recent chats (and their online status).
+SELECT u1.first_name || ' ' || u1.last_name AS full_name,
+        u1.profile_image_key,
+        u1.is_online,
+        c.id AS chat_id
+FROM users u
+JOIN friends_with f ON u.id = f.user_one_id AND u.public_id = $1
+JOIN chat c ON (c.user_one_id = f.user_one_id 
+                AND c.user_two_id = f.user_two_id AND c.user_one_id <> c.user_two_id)
+        OR (c.user_one_id = f.user_two_id 
+                AND c.user_two_id = f.user_one_id AND c.user_one_id <> c.user_two_id)
+JOIN users u1 ON u1.id = f.user_two_id
+ORDER BY c.message_last_sent DESC;
 
 
 --------------------------- posts --------------------------------------------------
@@ -160,9 +173,6 @@ GROUP BY p.id, u.id, u1.id
 ORDER BY p.posted_at DESC
 LIMIT $2
 OFFSET $3;
-
--- 7jfMSPx2PhLj17nLdgxnLW
-
 
 -- modify visibility of a post
 UPDATE posts 
