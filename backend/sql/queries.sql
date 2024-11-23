@@ -257,23 +257,6 @@ INSERT INTO chat (user_one_id, user_two_id)
         FROM (SELECT id FROM users WHERE public_id = $1) AS uo
         CROSS JOIN (SELECT id FROM users WHERE public_id = $2) AS ut;
 
--- return metadata of recent chats for a user (WIP)
-WITH u AS (
-        SELECT id FROM users WHERE public_id = $1
-), recent_chats AS (
-        SELECT c.id AS chat_id, NOW() - c.message_last_sent AS last_spoken_to,
-                CASE WHEN user_one_id = u.id THEN user_two_id
-                        ELSE user_one_id
-                END AS friend_id
-        FROM chat c, u
-        WHERE c.user_one_id = u.id OR c.user_two_id = u.id
-        ORDER BY c.message_last_sent DESC
-)
-SELECT rc.chat_id, rc.last_spoken_to, u.public_id, u.profile_image_key
-FROM recent_chats rc, users u, messages m
-WHERE rc.friend_id = u.id AND rc.chat_id = m.chat_id
-ORDER BY m.posted_at DESC;
-
 -- send a message to a chat
 INSERT INTO messages (sender_id, chat_id, message_text)
         SELECT id, $2, $3
@@ -302,3 +285,25 @@ WHERE u.public_id = $1
         AND c.id = m.chat_id
 GROUP BY c.id, u.id, m.id
 HAVING m.is_seen IS FALSE;
+
+-- return metadata for most recent chats
+WITH recent_chats AS (
+        SELECT u1.public_id,
+                u1.first_name || ' ' || u1.last_name AS full_name,
+                u1.profile_image_key,
+                c.id AS chat_id,
+                m.is_seen,
+                m.message_text,
+                m.sender_id = u.id AS sent_by_you,
+                m.posted_at,
+                rank() OVER (PARTITION BY c.id ORDER BY m.posted_at DESC) AS recently_posted
+        FROM users u, chat c, messages m, users u1
+        WHERE u.public_id = $1
+                AND (u.id = c.user_one_id AND u1.id = c.user_two_id
+                        OR u.id = c.user_two_id AND u1.id = c.user_one_id)
+                AND c.id = m.chat_id
+)
+SELECT *
+FROM recent_chats rc
+WHERE rc.recently_posted = 1
+ORDER BY rc.posted_at DESC;
