@@ -89,10 +89,11 @@ CREATE TABLE post_tags (
 );
 
 CREATE TABLE reactions (
+    id SERIAL PRIMARY KEY,
     post_id INT REFERENCES posts(id)ON DELETE CASCADE,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     reaction reaction_type NOT NULL,
-    PRIMARY KEY (post_id, user_id)
+    UNIQUE (post_id, user_id)
 );
 
 CREATE TABLE post_media (
@@ -120,10 +121,11 @@ CREATE TABLE comment_tags (
 );
 
 CREATE TABLE comment_reactions (
+    id SERIAL PRIMARY KEY,
     comment_id INT REFERENCES comments(id) ON DELETE CASCADE,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     reaction reaction_type NOT NULL,
-    PRIMARY KEY (comment_id, user_id)
+    UNIQUE (comment_id, user_id)
 );
 
 CREATE TABLE chat ( -- chat only supports two users for now

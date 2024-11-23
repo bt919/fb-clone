@@ -47,7 +47,9 @@ const populatePosts = (numberOfCurrentUsers) => {
     );
     // add reactions to each post
     for (let j = 1; j < 10; j += 1) {
-      console.log(`INSERT INTO reactions VALUES (${i}, ${j}, 'like');`);
+      console.log(
+        `INSERT INTO reactions (post_id, user_id, reaction) VALUES (${i}, ${j}, 'like');`,
+      );
     }
     // add comments to each post
     for (let j = 1; j < 5; j += 1) {

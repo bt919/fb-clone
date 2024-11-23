@@ -123,11 +123,26 @@ INSERT INTO post_media (post_id, image_key, mime)
         SELECT id, $3, $4 FROM new_post;
 
 -- retrieve only your posts by recency (for profile page)
+SELECT u.public_id, 
+        u.first_name || ' ' || u.last_name AS full_name,
+        u.profile_image_key,
+        p.id AS post_id,
+        p.posted_at,
+        COUNT(r.user_id = u.id) > 0 AS liked_by_user,
+        COUNT(DISTINCT r.id) AS number_of_likes,
+        COUNT(DISTINCT c.id) AS number_of_comments
+FROM users u 
+JOIN posts p ON u.id = p.author_id
+LEFT OUTER JOIN reactions r ON p.id = r.post_id
+LEFT OUTER JOIN comments c ON p.id = c.post_id
+WHERE u.public_id = $1
+GROUP BY p.id, u.id
+ORDER BY p.posted_at;
 
 -- retrieve your posts as well as your friends' posts (for home page)
 
 
--- 9gHdLdKjnTSoa81H3fMYic
+-- 7jfMSPx2PhLj17nLdgxnLW
 
 
 -- modify visibility of a post
