@@ -1,27 +1,278 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["typedSql"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model users {
-  id              Int         @id @default(autoincrement())
-  public_id       String      @unique
-  email           String      @unique @db.VarChar(320)
-  hashed_password String
-  first_name      String      @db.VarChar(50)
-  last_name       String      @db.VarChar(50)
-  gender          gender_type
-  birthday        DateTime    @db.Date
+  id                                                 Int                 @id @default(autoincrement())
+  public_id                                          String              @unique
+  email                                              String              @unique @db.VarChar(320)
+  hashed_password                                    String
+  first_name                                         String              @db.VarChar(50)
+  last_name                                          String              @db.VarChar(50)
+  gender                                             gender_type
+  birthday                                           DateTime            @db.Date
+  profile_image_key                                  String?
+  is_online                                          Boolean?            @default(false)
+  biography                                          biography?
+  block_list_block_list_blocked_idTousers            block_list[]        @relation("block_list_blocked_idTousers")
+  block_list_block_list_blocker_idTousers            block_list[]        @relation("block_list_blocker_idTousers")
+  chat_chat_user_one_idTousers                       chat[]              @relation("chat_user_one_idTousers")
+  chat_chat_user_two_idTousers                       chat[]              @relation("chat_user_two_idTousers")
+  comment_reactions                                  comment_reactions[]
+  comment_tags_comment_tags_author_idTousers         comment_tags[]      @relation("comment_tags_author_idTousers")
+  comment_tags_comment_tags_tagged_user_idTousers    comment_tags[]      @relation("comment_tags_tagged_user_idTousers")
+  comments                                           comments[]
+  friend_requests_friend_requests_receiver_idTousers friend_requests[]   @relation("friend_requests_receiver_idTousers")
+  friend_requests_friend_requests_sender_idTousers   friend_requests[]   @relation("friend_requests_sender_idTousers")
+  friends_with_friends_with_user_one_idTousers       friends_with[]      @relation("friends_with_user_one_idTousers")
+  friends_with_friends_with_user_two_idTousers       friends_with[]      @relation("friends_with_user_two_idTousers")
+  messages                                           messages[]
+  notifications_notifications_receiver_idTousers     notifications[]     @relation("notifications_receiver_idTousers")
+  notifications_notifications_sender_idTousers       notifications[]     @relation("notifications_sender_idTousers")
+  post_tags_post_tags_author_idTousers               post_tags[]         @relation("post_tags_author_idTousers")
+  post_tags_post_tags_tagged_user_idTousers          post_tags[]         @relation("post_tags_tagged_user_idTousers")
+  posts                                              posts[]
+  reactions                                          reactions[]
+  studied_at                                         studied_at[]
+  worked_at                                          worked_at[]
+}
+
+model biography {
+  user_id         Int     @id
+  current_city    String?
+  hometown        String?
+  cover_image_key String?
+  webpage_link    String?
+  users           users   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model block_list {
+  id                                 Int    @id @default(autoincrement())
+  blocker_id                         Int?
+  blocked_id                         Int?
+  users_block_list_blocked_idTousers users? @relation("block_list_blocked_idTousers", fields: [blocked_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_block_list_blocker_idTousers users? @relation("block_list_blocker_idTousers", fields: [blocker_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([blocker_id, blocked_id])
+}
+
+model chat {
+  id                            Int        @id @default(autoincrement())
+  user_one_id                   Int?
+  user_two_id                   Int?
+  theme                         String?
+  emoji                         String?
+  nickname_one                  String?
+  nickname_two                  String?
+  message_last_sent             DateTime?  @default(now()) @db.Timestamp(6)
+  users_chat_user_one_idTousers users?     @relation("chat_user_one_idTousers", fields: [user_one_id], references: [id], onUpdate: NoAction)
+  users_chat_user_two_idTousers users?     @relation("chat_user_two_idTousers", fields: [user_two_id], references: [id], onUpdate: NoAction)
+  messages                      messages[]
+
+  @@unique([user_one_id, user_two_id])
+}
+
+model comment_reactions {
+  id         Int           @id @default(autoincrement())
+  comment_id Int?
+  user_id    Int?
+  reaction   reaction_type
+  comments   comments?     @relation(fields: [comment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users?        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([comment_id, user_id])
+}
+
+model comment_tags {
+  id                                       Int      @id @default(autoincrement())
+  comment_id                               Int
+  author_id                                Int
+  tagged_user_id                           Int
+  text_name                                String
+  users_comment_tags_author_idTousers      users    @relation("comment_tags_author_idTousers", fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  comments                                 comments @relation(fields: [comment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_comment_tags_tagged_user_idTousers users    @relation("comment_tags_tagged_user_idTousers", fields: [tagged_user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model comments {
+  id                Int                 @id @default(autoincrement())
+  parent_id         Int?
+  post_id           Int
+  author_id         Int
+  comment_text      String
+  posted_at         DateTime?           @default(now()) @db.Timestamp(6)
+  comment_reactions comment_reactions[]
+  comment_tags      comment_tags[]
+  users             users               @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  comments          comments?           @relation("commentsTocomments", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_comments    comments[]          @relation("commentsTocomments")
+  posts             posts               @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model friend_requests {
+  id                                       Int       @id @default(autoincrement())
+  sender_id                                Int
+  receiver_id                              Int
+  is_accepted                              Boolean?  @default(false)
+  sent_at                                  DateTime? @default(now()) @db.Timestamp(6)
+  is_seen                                  Boolean?  @default(false)
+  users_friend_requests_receiver_idTousers users     @relation("friend_requests_receiver_idTousers", fields: [receiver_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_friend_requests_sender_idTousers   users     @relation("friend_requests_sender_idTousers", fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([sender_id, receiver_id])
+}
+
+model friends_with {
+  user_one_id                           Int
+  user_two_id                           Int
+  users_friends_with_user_one_idTousers users @relation("friends_with_user_one_idTousers", fields: [user_one_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_friends_with_user_two_idTousers users @relation("friends_with_user_two_idTousers", fields: [user_two_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_one_id, user_two_id])
+}
+
+model message_media {
+  id         Int      @id @default(autoincrement())
+  message_id Int
+  image_key  String
+  mime       String?
+  messages   messages @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model messages {
+  id            Int             @id @default(autoincrement())
+  sender_id     Int
+  chat_id       Int
+  message_text  String?
+  is_seen       Boolean?        @default(false)
+  posted_at     DateTime?       @default(now()) @db.Timestamp(6)
+  message_media message_media[]
+  chat          chat            @relation(fields: [chat_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         users           @relation(fields: [sender_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+}
+
+model notifications {
+  id                                     Int          @id @default(autoincrement())
+  sender_id                              Int
+  receiver_id                            Int
+  notification_type                      notification
+  link                                   String?
+  is_seen                                Boolean?     @default(false)
+  created_at                             DateTime?    @default(now()) @db.Timestamp(6)
+  users_notifications_receiver_idTousers users        @relation("notifications_receiver_idTousers", fields: [receiver_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_notifications_sender_idTousers   users        @relation("notifications_sender_idTousers", fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model post_media {
+  id        Int     @id @default(autoincrement())
+  post_id   Int
+  image_key String
+  mime      String?
+  posts     posts   @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model post_tags {
+  id                                    Int    @id @default(autoincrement())
+  post_id                               Int
+  author_id                             Int
+  tagged_user_id                        Int
+  text_name                             String
+  users_post_tags_author_idTousers      users  @relation("post_tags_author_idTousers", fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  posts                                 posts  @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_post_tags_tagged_user_idTousers users  @relation("post_tags_tagged_user_idTousers", fields: [tagged_user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([post_id, tagged_user_id])
+}
+
+model posts {
+  id         Int              @id @default(autoincrement())
+  author_id  Int
+  post_text  String?
+  posted_at  DateTime?        @default(now()) @db.Timestamp(6)
+  visibility visibility_type? @default(public)
+  comments   comments[]
+  post_media post_media[]
+  post_tags  post_tags[]
+  users      users            @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reactions  reactions[]
+}
+
+model reactions {
+  id       Int           @id @default(autoincrement())
+  post_id  Int?
+  user_id  Int?
+  reaction reaction_type
+  posts    posts?        @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users    users?        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([post_id, user_id])
+}
+
+model school {
+  id         Int          @id @default(autoincrement())
+  name       String
+  level      String?
+  studied_at studied_at[]
+}
+
+model studied_at {
+  user_id   Int
+  school_id Int
+  school    school @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users     users  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, school_id])
+}
+
+model worked_at {
+  user_id      Int
+  workplace_id Int
+  users        users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  workplace    workplace @relation(fields: [workplace_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, workplace_id])
+}
+
+model workplace {
+  id        Int         @id @default(autoincrement())
+  name      String
+  worked_at worked_at[]
 }
 
 enum gender_type {
   male
   female
   other
+}
+
+enum notification {
+  birthday
+  post_tag
+  comment_tag
+  friend_request
+  fr_accepted
+}
+
+enum reaction_type {
+  like
+  heart
+  care
+  haha
+  wow
+  sad
+  angry
+}
+
+enum visibility_type {
+  public
+  friends
+  private
 }
