@@ -1,6 +1,6 @@
 import { type FastifyRequest, type FastifyInstance } from "fastify";
 import { PrismaClient } from "@prisma/client";
-import { AuthRepository } from "@/modules/auth/auth.repository";
+import { AuthRepository } from "@/modules/user/user.repository";
 
 declare module "fastify" {
   interface FastifyRequest {

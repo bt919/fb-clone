@@ -4,10 +4,10 @@ import { FastifyInstance } from "fastify";
 import helmet from "@fastify/helmet";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import path from "node:path";
-import authRouter from "@/modules/auth/auth.router";
+import authRouter from "@/modules/user/user.router";
 import { verifyJWT } from "@/shared/jwt/verify-jwt";
 import db from "@/shared/db/connection";
-import { AuthRepository } from "@/modules/auth/auth.repository";
+import { AuthRepository } from "@/modules/user/user.repository";
 import { getPresignedPutUrl } from "@/shared/aws-utils/cloudfront-sign";
 
 export default async function createServer(fastify: FastifyInstance) {
@@ -38,7 +38,7 @@ export default async function createServer(fastify: FastifyInstance) {
 
   await fastify.register((fastify: FastifyInstance, opts, done) => {
     fastify.decorate("authRepository", new AuthRepository(db));
-    fastify.register(authRouter);
+    fastify.register(authRouter, { prefix: "/user" });
     done();
   });
 

@@ -4,8 +4,8 @@ import {
   UserCredentials,
   UserCredentialsType,
   UserType,
-} from "./auth.dto";
-import { signUp, signIn } from "./auth.service";
+} from "./user.dto";
+import { signUp, signIn } from "./user.service";
 
 export default function (fastify: FastifyInstance, opts, done) {
   fastify.post<{ Body: UserType }>(

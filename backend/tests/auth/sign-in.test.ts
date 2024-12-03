@@ -1,6 +1,6 @@
 import server from "../setup/server";
-import authRouter from "@/modules/auth/auth.router";
-import { AuthRepository } from "@/modules/auth/auth.repository";
+import authRouter from "@/modules/user/user.router";
+import { AuthRepository } from "@/modules/user/user.repository";
 import { prismaMock } from "../setup/singleton";
 import { FastifyInstance } from "fastify";
 import { gender_type } from "@prisma/client";

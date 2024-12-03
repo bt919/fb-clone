@@ -1,12 +1,12 @@
 import argon from "@node-rs/argon2";
 import { authConfig } from "@/config/auth.config";
-import { AuthRepository } from "./auth.repository";
+import { AuthRepository } from "./user.repository";
 import {
   BadRequestException,
   UnauthorizedException,
 } from "@/shared/exceptions/exceptions";
 import * as jose from "jose";
-import { UserType, UserCredentialsType } from "./auth.dto";
+import { UserType, UserCredentialsType } from "./user.dto";
 
 export async function signUp(
   payload: UserType,
