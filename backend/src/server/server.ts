@@ -8,6 +8,7 @@ import authRouter from "@/modules/auth/auth.router";
 import { verifyJWT } from "@/shared/jwt/verify-jwt";
 import db from "@/shared/db/connection";
 import { AuthRepository } from "@/modules/auth/auth.repository";
+import { getPresignedPutUrl } from "@/shared/aws-utils/cloudfront-sign";
 
 export default async function createServer(fastify: FastifyInstance) {
   await fastify.register(helmet, {});
@@ -24,6 +25,16 @@ export default async function createServer(fastify: FastifyInstance) {
   });
 
   // fastify.decorate("db", db);
+
+  // a temporary route just to test out pre-signed urls (it works)
+  fastify.post("/", async function (request, reply) {
+    const signedUrl = getPresignedPutUrl({
+      s3ObjectKey: "index.html",
+      expiresIn: 60,
+    });
+
+    return reply.status(200).send({ signedUrl });
+  });
 
   await fastify.register((fastify: FastifyInstance, opts, done) => {
     fastify.decorate("authRepository", new AuthRepository(db));

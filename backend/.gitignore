@@ -4,3 +4,8 @@ node_modules
 
 # output of seeding.js
 sql/populate.sql
+
+
+# key group
+private_key.pem
+public_key.pem
