@@ -26,7 +26,7 @@ export default function SignIn() {
   const { login } = useAuth();
   const mutation = useMutation({
     mutationFn: async (data: SchemaType) => {
-      const response = await fetch(`${apiUrl}/sign-in`, {
+      const response = await fetch(`${apiUrl}/user/sign-in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,8 +42,13 @@ export default function SignIn() {
       }
       return response.json();
     },
-    onSuccess: (data) => {
-      login(data);
+    onSuccess: (body) => {
+      const data = body.data;
+      login({
+        token: data.token,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      });
     },
   });
   const {

@@ -8,6 +8,10 @@ import {
 import * as jose from "jose";
 import { UserType, UserCredentialsType } from "./user.dto";
 
+type PayloadType = {
+  userId: string;
+};
+
 export async function signUp(
   payload: UserType,
   authRepository: AuthRepository,
@@ -60,4 +64,17 @@ export async function signIn(
     lastName: userExists.lastName,
     gender: userExists.gender,
   };
+}
+
+export async function verifyToken(token: string): Promise<boolean> {
+  const secret = new TextEncoder().encode(authConfig.secretKey);
+  const decoded = await jose.jwtVerify<PayloadType>(token, secret);
+  console.log(decoded);
+  const { exp } = decoded.payload;
+
+  if (!exp || Date.now() <= exp) {
+    return false;
+  }
+
+  return true;
 }

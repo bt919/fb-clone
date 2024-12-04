@@ -5,14 +5,14 @@ import {
   UserCredentialsType,
   UserType,
 } from "./user.dto";
-import { signUp, signIn } from "./user.service";
+import { signUp, signIn, verifyToken } from "./user.service";
 
 export default function (fastify: FastifyInstance, opts, done) {
   fastify.post<{ Body: UserType }>(
     "/sign-up",
     { schema: { body: User } },
     async function (request, reply) {
-      const success = await signUp(request.body, this.authRepository);
+      await signUp(request.body, this.authRepository);
 
       return reply.status(201).send({ message: "success" });
     },
@@ -25,6 +25,19 @@ export default function (fastify: FastifyInstance, opts, done) {
       const userData = await signIn(request.body, this.authRepository);
 
       return reply.status(200).send({ message: "success", data: userData });
+    },
+  );
+
+  fastify.post<{ Body: { token: string } }>(
+    "/verify-token",
+    async function (request, reply) {
+      const isValid = await verifyToken(request.body.token);
+
+      if (!isValid) {
+        return reply.status(401).send();
+      }
+
+      return reply.status(200).send();
     },
   );
 

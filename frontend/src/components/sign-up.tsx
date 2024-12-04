@@ -50,7 +50,7 @@ export default function SignUp() {
         password: data.password,
         birthday: `${data.birthYear}-${data.birthMonth}-${data.birthDay}`,
       };
-      const response = await fetch(`${apiUrl}/sign-up`, {
+      const response = await fetch(`${apiUrl}/user/sign-up`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

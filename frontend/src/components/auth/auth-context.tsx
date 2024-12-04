@@ -5,13 +5,13 @@ export type AuthUser = {
   token: string;
   firstName: string;
   lastName: string;
-  gender: "male" | "female" | "other";
 };
 
 type AuthContext = {
   authData: AuthUser | null;
   login: (data: AuthUser) => void;
   logout: () => void;
+  checkLoggedIn: () => void;
 };
 
 const AuthContext = createContext<AuthContext | null>(null);
@@ -38,20 +38,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const checkLoggedIn = () => {
+    if (!authData) {
+      navigate({ to: "/", state: { message: "Please log in to continue." } });
+    }
+  };
+
   const logout = () => {
     setAuthData(null);
     localStorage.removeItem("authData");
     navigate({ to: "/", state: { message: "Successfully logged out." } });
   };
 
-  const login = (data: AuthUser) => {
+  const login = ({ token, firstName, lastName }: AuthUser) => {
+    const data = { token, firstName, lastName };
     setAuthData(data);
     localStorage.setItem("authData", JSON.stringify(data));
     navigate({ to: "/home" });
   };
 
   return (
-    <AuthContext.Provider value={{ authData, login, logout }}>
+    <AuthContext.Provider value={{ authData, login, logout, checkLoggedIn }}>
       {children}
     </AuthContext.Provider>
   );
