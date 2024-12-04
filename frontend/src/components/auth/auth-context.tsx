@@ -5,6 +5,8 @@ export type AuthUser = {
   token: string;
   firstName: string;
   lastName: string;
+  gender: "male" | "female";
+  avatar: string | null;
 };
 
 type AuthContext = {
@@ -50,8 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     navigate({ to: "/", state: { message: "Successfully logged out." } });
   };
 
-  const login = ({ token, firstName, lastName }: AuthUser) => {
-    const data = { token, firstName, lastName };
+  const login = ({ token, firstName, lastName, gender, avatar }: AuthUser) => {
+    const data = { token, firstName, lastName, gender, avatar };
     setAuthData(data);
     localStorage.setItem("authData", JSON.stringify(data));
     navigate({ to: "/home" });

@@ -48,6 +48,8 @@ export default function SignIn() {
         token: data.token,
         firstName: data.firstName,
         lastName: data.lastName,
+        gender: data.gender,
+        avatar: data.avatar,
       });
     },
   });

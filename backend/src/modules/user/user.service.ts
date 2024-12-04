@@ -62,19 +62,7 @@ export async function signIn(
     token: token,
     firstName: userExists.firstName,
     lastName: userExists.lastName,
+    avatar: userExists.avatar,
     gender: userExists.gender,
   };
-}
-
-export async function verifyToken(token: string): Promise<boolean> {
-  const secret = new TextEncoder().encode(authConfig.secretKey);
-  const decoded = await jose.jwtVerify<PayloadType>(token, secret);
-  console.log(decoded);
-  const { exp } = decoded.payload;
-
-  if (!exp || Date.now() <= exp) {
-    return false;
-  }
-
-  return true;
 }
