@@ -44,10 +44,14 @@ export default function SignIn() {
     },
     onSuccess: (body) => {
       const data = body.data;
+      const capitalizedFirstName =
+        data.firstName[0].toUpperCase() + data.firstName.slice(1);
+      const capitalizedLastName =
+        data.lastName[0].toUpperCase() + data.lastName.slice(1);
       login({
         token: data.token,
-        firstName: data.firstName,
-        lastName: data.lastName,
+        firstName: capitalizedFirstName,
+        lastName: capitalizedLastName,
         gender: data.gender,
         avatar: data.avatar,
       });

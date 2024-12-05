@@ -18,7 +18,7 @@ export async function verifyJWT(request: FastifyRequest) {
   const decoded = await jose.jwtVerify<PayloadType>(token, secret);
 
   const { email, exp } = decoded.payload;
-  const isTokenExpired = exp ? Date.now() < exp : false;
+  const isTokenExpired = exp && exp < Date.now() ? true : false;
   if (!isTokenExpired) {
     throw new UnauthorizedException("Unauthorized");
   }

@@ -1,6 +1,7 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 
+import { NavBar } from "@/src/components/nav-bar";
 import { useAuth } from "@/src/components/auth/auth-context";
 
 export const Route = createLazyFileRoute("/home/")({
@@ -14,5 +15,9 @@ function HomePage() {
     checkLoggedIn();
   });
 
-  return <div>Hello /home/!</div>;
+  return (
+    <div className="bg-slate-200 h-full">
+      <NavBar />
+    </div>
+  );
 }
