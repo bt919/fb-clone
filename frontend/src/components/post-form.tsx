@@ -47,7 +47,8 @@ export function PostForm() {
           {...register("text")}
           className="w-full m-2 outline-none p-4 bg-slate-50 appearance-none"
           placeholder={`What's on your mind, ${authData?.firstName}?`}
-          rows={text.length > 120 ? 5 : 2}
+          rows={text?.length > 120 ? 5 : 2}
+          spellCheck={false}
         ></textarea>
 
         <div
