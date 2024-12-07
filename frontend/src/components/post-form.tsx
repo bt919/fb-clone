@@ -80,6 +80,9 @@ export function PostForm() {
             </svg>
           </button>
           <label
+            onClick={(e) => {
+              if (image?.length) e.preventDefault();
+            }}
             htmlFor="image"
             className="absolute flex flex-col items-center justify-center w-[450px] h-full rounded-md bg-gray-200 hover:bg-gray-300 hover:cursor-pointer"
           >
@@ -101,12 +104,16 @@ export function PostForm() {
           </label>
           {image?.length ? (
             <img
+              draggable={false}
               src={URL.createObjectURL(image[0])}
               className="z-0 w-full rounded-md"
             ></img>
           ) : null}
           <input
             {...register("image")}
+            onClick={(e) => {
+              if (image?.length) e.preventDefault();
+            }}
             id="image"
             type="file"
             className="appearance-none w-11/12 bg-gray-200 opacity-0 absolute top-0"
