@@ -4,24 +4,25 @@ import { authConfig } from "@/config/auth.config";
 import { FastifyRequest } from "fastify";
 
 type PayloadType = {
-  email: string;
+  userId: string;
 };
 
 export async function verifyJWT(request: FastifyRequest) {
-  const bearer = request.headers["Authorization"];
-  if (!bearer || bearer instanceof Array) {
+  const bearer = request.headers["authorization"];
+  if (!bearer) {
     throw new UnauthorizedException("Unauthorized");
   }
 
-  const token = bearer.split(" ")[0];
+  const token = bearer.split(" ")[1];
   const secret = new TextEncoder().encode(authConfig.secretKey);
   const decoded = await jose.jwtVerify<PayloadType>(token, secret);
 
-  const { email, exp } = decoded.payload;
+  const { userId, exp } = decoded.payload;
+
   const isTokenExpired = exp && exp < Date.now() ? true : false;
   if (!isTokenExpired) {
     throw new UnauthorizedException("Unauthorized");
   }
 
-  request.email = email;
+  request.userId = userId;
 }
