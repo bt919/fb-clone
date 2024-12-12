@@ -39,6 +39,31 @@ export default function (fastify: FastifyInstance, opts, done) {
     },
   );
 
+  /** allow a user to create a post with an image, and optionally text. For
+   * the image upload, return a pre-signed URL that allows PUT requests
+   */
+  fastify.post<{ Body: PostWithImage }>(
+    "/image",
+    {
+      schema: {
+        body: PostWithImage,
+      },
+    },
+    async function (request, reply) {
+      const userId = request.userId;
+      const { text, imageSizeInBytes, mimeType } = request.body;
+
+      const presignedUrl = await createPostWithImage(
+        { userId, text: text ?? "" },
+        this.postRepository,
+      );
+
+      return reply
+        .status(201)
+        .send({ message: "success", data: { presignedUrl } });
+    },
+  );
+
   /** returns a user's homepage feed which consists of their own posts, as well
    *  as their friends posts
    */
