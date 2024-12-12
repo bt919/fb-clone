@@ -1,3 +1,4 @@
+-- @param {String} $1:email
 SELECT email, hashed_password AS "hashedPassword",
         public_id AS "userId", 
         first_name AS "firstName", 

@@ -5,9 +5,11 @@ import helmet from "@fastify/helmet";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import path from "node:path";
 import authRouter from "@/modules/user/user.router";
+import postRouter from "@/modules/post/post.router";
 import { verifyJWT } from "@/shared/jwt/verify-jwt";
 import db from "@/shared/db/connection";
 import { AuthRepository } from "@/modules/user/user.repository";
+import { PostRepository } from "@/modules/post/post.repository";
 import { getPresignedPutUrl } from "@/shared/aws-utils/cloudfront-sign";
 
 export default async function createServer(fastify: FastifyInstance) {
@@ -30,7 +32,7 @@ export default async function createServer(fastify: FastifyInstance) {
   fastify.post("/", async function (request, reply) {
     const signedUrl = getPresignedPutUrl({
       s3ObjectKey: "index.html",
-      expiresIn: 60,
+      expiresInSeconds: 60,
     });
 
     return reply.status(200).send({ signedUrl });
@@ -43,17 +45,17 @@ export default async function createServer(fastify: FastifyInstance) {
   });
 
   fastify.register((fastify: FastifyInstance, opts, done) => {
-    fastify.addHook("preParsing", async (request) => {
-      request.email = "";
+    fastify.addHook("onRequest", async (request) => {
+      request.userId = "";
       await verifyJWT(request);
     });
+
     // all routes that need auth go in here
+    fastify.decorate("postRepository", new PostRepository(db));
+    fastify.register(postRouter, { prefix: "/post" });
+
     done();
   });
-
-  // fastify.addHook("preParsing", async (request) => {
-  //   await verifyJWT(request);
-  // });
 
   return fastify.withTypeProvider<TypeBoxTypeProvider>();
 }
