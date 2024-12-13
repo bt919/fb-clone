@@ -12,7 +12,7 @@ export type AuthUser = {
 type AuthContext = {
   authData: AuthUser | null;
   login: (data: AuthUser) => void;
-  logout: () => void;
+  logout: (message: string) => void;
   checkLoggedIn: () => void;
 };
 
@@ -46,10 +46,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = (message: string) => {
+    navigate({ to: "/", state: { message } });
     setAuthData(null);
     localStorage.removeItem("authData");
-    navigate({ to: "/", state: { message: "Successfully logged out." } });
   };
 
   const login = ({ token, firstName, lastName, gender, avatar }: AuthUser) => {

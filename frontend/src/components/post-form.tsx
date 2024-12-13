@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useState } from "react";
 
+import apiUrl from "@/src/lib/api-url";
 import profileImg from "@/src/assets/blank-profile-picture-973460_640.png";
 import { useAuth } from "@/src/components/auth/auth-context";
 
@@ -14,11 +15,107 @@ export function PostForm() {
   const { authData } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isFileInputOpen, setIsFileInputOpen] = useState(false);
-  const { register, handleSubmit, watch, setValue } = useForm<PostInputs>();
+  const { register, handleSubmit, watch, setValue, reset } =
+    useForm<PostInputs>();
   const [text, image] = watch(["text", "image"]);
+  const [imageErrors, setImageErrors] = useState<string[]>([]);
+  const [textError, setTextError] = useState("");
+  const acceptedMimeTypes = [
+    "image/jpg",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+  ];
+  const maxFileSizeInBytes = 1000000; // 1 MB
+  const maxTextLength = 10000;
 
-  const onSubmit: SubmitHandler<PostInputs> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<PostInputs> = async (data) => {
+    const files = data.image;
+    const text = data.text;
+    let hasErrors = false;
+
+    setImageErrors((prev) => []);
+    setTextError("");
+    if (files?.length) {
+      const file = files[0];
+      if (acceptedMimeTypes.indexOf(file.type) === -1) {
+        hasErrors = true;
+        setImageErrors((prev) =>
+          prev.concat(["Image must be a jpg, jpeg, png, or webp."]),
+        );
+      }
+      if (file.size > maxFileSizeInBytes) {
+        hasErrors = true;
+        setImageErrors((prev) => prev.concat(["Image must be less than 1MB."]));
+      }
+    }
+
+    if (text.length > maxTextLength) {
+      hasErrors = true;
+      setTextError("Post cannot be longer than 10,000 characters.");
+    }
+
+    if (!hasErrors && (files?.length || text.length)) {
+      if (files?.length) {
+        // write a post with an image
+        const file = files[0];
+        const imageSizeInBytes = file.size;
+        const mimeType = file.type;
+
+        const res = await fetch(`${apiUrl}/post/image`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authData?.token}`,
+          },
+          body: JSON.stringify({
+            text,
+            imageSizeInBytes,
+            mimeType,
+          }),
+        });
+        if (res.status !== 201) {
+          setImageErrors((prev) =>
+            prev.concat(["Something went wrong. Please try again later."]),
+          );
+          return;
+        }
+        const jsonData = await res.json();
+        const presignedUrl = jsonData.data.presignedUrl;
+
+        await fetch(presignedUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": mimeType,
+          },
+          body: file,
+        });
+        reset();
+        setIsOpen(false);
+        setIsFileInputOpen(false);
+      } else {
+        // write a post without an image
+        const res = await fetch(`${apiUrl}/post`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authData?.token}`,
+          },
+          body: JSON.stringify({
+            text,
+          }),
+        });
+        if (res.status !== 201) {
+          setImageErrors((prev) =>
+            prev.concat(["Something went wrong. Please try again later."]),
+          );
+          return;
+        }
+        reset();
+        setIsOpen(false);
+        setIsFileInputOpen(false);
+      }
+    }
   };
 
   return (
@@ -47,7 +144,7 @@ export function PostForm() {
           {...register("text")}
           className="w-full m-2 outline-none p-4 bg-slate-50 appearance-none"
           placeholder={`What's on your mind, ${authData?.firstName}?`}
-          rows={text?.length > 120 ? 5 : 2}
+          rows={5}
           spellCheck={false}
         ></textarea>
 
@@ -61,6 +158,7 @@ export function PostForm() {
         >
           <button
             className="absolute z-10 right-[12px] top-[12px] bg-slate-50 p-1 rounded-3xl hover:bg-slate-100"
+            type="button"
             onClick={() => {
               setIsFileInputOpen(false);
               setValue("image", null);
@@ -123,6 +221,7 @@ export function PostForm() {
         <div className="w-11/12 m-2 p-3 border-2 border-gray-200 rounded-lg flex items-center gap-2">
           <p className="mr-auto">Add to your post</p>
           <button
+            type="button"
             title="Photo"
             className="hover:bg-gray-200 p-1 hover:rounded-3xl"
             onClick={() => setIsFileInputOpen(true)}
@@ -141,6 +240,7 @@ export function PostForm() {
             </svg>
           </button>
           <button
+            type="button"
             title="Tag people"
             className="hover:bg-gray-200 p-1 hover:rounded-3xl"
           >
@@ -167,6 +267,12 @@ export function PostForm() {
         >
           Post
         </button>
+        <ul className="list-disc list-inside text-red-500 rounded-lg shadow-lg opacity-80">
+          {imageErrors.length
+            ? imageErrors.map((imageError) => <li>{imageError}</li>)
+            : null}
+          {textError.length ? <li>{textError}</li> : null}
+        </ul>
       </form>
 
       <div

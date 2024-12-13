@@ -139,7 +139,7 @@ export function AccountModal() {
           <div className="flex items-center gap-2 w-[320px]">
             <button
               className="w-full flex gap-4 items-center p-2 rounded-lg hover:bg-gray-200"
-              onClick={() => logout()}
+              onClick={() => logout("Succesfully logged out.")}
             >
               <div className="bg-gray-300 p-2 rounded-3xl">
                 <svg
