@@ -14,7 +14,7 @@ SELECT u1.public_id AS "userId",
         FROM users u, posts p 
         WHERE u.public_id = $1 AND u.id = p.author_id) AS "numberOfPosts"
 FROM users u
-JOIN friends_with f ON u.id = f.user_one_id AND u.public_id = $1
+LEFT OUTER JOIN friends_with f ON u.id = f.user_one_id AND u.public_id = $1
 JOIN posts p ON u.id = p.author_id OR f.user_two_id = p.author_id
 JOIN users u1 ON u1.id = p.author_id
 LEFT OUTER JOIN reactions r ON p.id = r.post_id

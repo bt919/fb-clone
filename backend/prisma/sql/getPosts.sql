@@ -17,7 +17,6 @@ FROM users u
 JOIN posts p ON u.id = p.author_id AND u.public_id = $1
 LEFT OUTER JOIN reactions r ON p.id = r.post_id
 LEFT OUTER JOIN comments c ON p.id = c.post_id
-WHERE u.public_id = $1
 GROUP BY p.id, u.id
 ORDER BY p.posted_at DESC
 LIMIT $2
