@@ -5,6 +5,7 @@ import {
 } from "@/modules/post/post.repository";
 import { v4 as uuidv4 } from "uuid";
 import { getPresignedPutUrl } from "@/shared/aws-utils/cloudfront-sign";
+import { BadRequestException } from "@/shared/exceptions/exceptions";
 
 export async function getPosts(
   payload: GetPostsType,
@@ -15,10 +16,19 @@ export async function getPosts(
 }
 
 export async function getAllPosts(
-  payload: GetPostsType,
+  { userId, resultsPerPage, pageNumber }: GetPostsType,
   postRepository: PostRepository,
 ) {
-  const posts = await postRepository.getAll(payload);
+  if (resultsPerPage > 10) {
+    throw new BadRequestException("Results per page must not exceed 10.");
+  }
+
+  const posts = await postRepository.getAll({
+    userId,
+    resultsPerPage,
+    pageNumber,
+  });
+
   return posts;
 }
 

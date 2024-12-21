@@ -8,8 +8,8 @@ import {
 
 export type GetPostsType = {
   userId: string;
-  limit: number;
-  offset: number;
+  resultsPerPage: number;
+  pageNumber: number;
 };
 
 export type CreatePostType = {
@@ -40,17 +40,21 @@ export class PostRepository {
     await this.db.$queryRawTyped(createPostWithImage(userId, text, imageKey));
   }
 
-  async get(data: GetPostsType) {
-    const { userId, limit, offset } = data;
+  async get({ userId, resultsPerPage, pageNumber }: GetPostsType) {
+    const limit = resultsPerPage;
+    const offset = pageNumber * resultsPerPage;
+
     const posts = await this.db.$queryRawTyped(getPosts(userId, limit, offset));
 
     return posts;
   }
 
-  async getAll(data: GetPostsType) {
-    const { userId, limit, offset } = data;
+  async getAll({ userId, resultsPerPage, pageNumber }: GetPostsType) {
+    const limit = resultsPerPage;
+    const offset = pageNumber * resultsPerPage;
+
     const posts = await this.db.$queryRawTyped(
-      getAllPosts(userId, limit, offset),
+      getAllPosts(userId, BigInt(limit) as any, BigInt(offset) as any),
     );
 
     return posts;

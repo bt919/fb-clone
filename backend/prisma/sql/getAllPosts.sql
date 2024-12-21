@@ -8,9 +8,9 @@ SELECT u1.public_id AS "userId",
         p.id AS "postId",
         p.posted_at AS "postedAt",
         COUNT(r.user_id = u.id) > 0 AS "isLikedByUser",
-        COUNT(DISTINCT r.id) AS "numberOfLikes",
-        COUNT(DISTINCT c.id) AS "numberOfComments",
-        (SELECT COUNT(*) 
+        COUNT(DISTINCT r.id)::int AS "numberOfLikes",
+        COUNT(DISTINCT c.id)::int AS "numberOfComments",
+        (SELECT COUNT(*)::int 
         FROM users u, posts p 
         WHERE u.public_id = $1 AND u.id = p.author_id) AS "numberOfPosts"
 FROM users u

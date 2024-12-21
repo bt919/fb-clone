@@ -3,24 +3,28 @@ import {
   createPost,
   getPosts,
   createPostWithImage,
+  getAllPosts,
 } from "@/modules/post/post.service";
-import { Type } from "@sinclair/typebox";
+import { Integer, Type } from "@sinclair/typebox";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { PostWithImage, PostWithText } from "@/modules/post/post.dto";
 
 export default function (fastify: FastifyInstance, opts, done) {
   /** returns a user's posts from most recent */
-  fastify.get<{ Body: { limit: number; offset: number } }>(
-    "/",
-    async function (request, reply) {
-      const userId = request.userId;
-      const { limit, offset } = request.body;
+  fastify.get<{
+    Body: { limit: number; offset: number };
+    Params: { resultsPerPage: number; pageNumber: number };
+  }>("/", async function (request, reply) {
+    const userId = request.userId;
+    const { resultsPerPage, pageNumber } = request.params;
 
-      const posts = getPosts({ userId, limit, offset }, this.postRepository);
+    const posts = getPosts(
+      { userId, resultsPerPage, pageNumber },
+      this.postRepository,
+    );
 
-      return reply.status(200).send(posts);
-    },
-  );
+    return reply.status(200).send(posts);
+  });
 
   /** allow a user to create a post with text only
    */
@@ -67,9 +71,31 @@ export default function (fastify: FastifyInstance, opts, done) {
   /** returns a user's homepage feed which consists of their own posts, as well
    *  as their friends posts
    */
-  fastify.get("/home", async function (request, reply) {
-    return reply.status(200).send({});
-  });
+  fastify.get<{ Querystring: { resultsPerPage: number; pageNumber: number } }>(
+    "/home",
+    async function (request, reply) {
+      const userId = request.userId;
+      const { resultsPerPage, pageNumber } = request.query;
+
+      const posts = await getAllPosts(
+        { userId, resultsPerPage, pageNumber },
+        this.postRepository,
+      );
+
+      const numberOfPosts = posts[0]?.numberOfPosts;
+      const numberOfPages = numberOfPosts
+        ? Math.ceil(numberOfPosts / resultsPerPage)
+        : 0;
+
+      return reply.status(200).send({
+        message: "success",
+        data: {
+          numberOfPages,
+          posts,
+        },
+      });
+    },
+  );
 
   done();
 }
