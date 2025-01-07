@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import { NavBar } from "@/src/components/nav-bar";
 import { PostForm } from "@/src/components/post-form";
+import { Posts } from "@/src/components/posts";
 import { useAuth } from "@/src/components/auth/auth-context";
 
 export const Route = createLazyFileRoute("/home/")({
@@ -17,10 +18,11 @@ function HomePage() {
   });
 
   return (
-    <div className="bg-slate-200 h-full">
+    <div className="bg-slate-200 h-max">
       <NavBar />
       <div className="w-screen flex flex-col items-center p-4">
         <PostForm />
+        <Posts />
       </div>
     </div>
   );
